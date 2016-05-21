@@ -11,16 +11,18 @@ class GridGame(object):
         if size % 2 != 0 or size <= 0:
             raise ValueError('Enter a positive even number board dimension')
 
-        player1.number = 1
-        player1.value = -1
-        player1.opponent = player2
+        self.player1 = player1
+        self.player1.number = 1
+        self.player1.value = -1
+        self.player1.opponent = player2
 
-        player2.number = 2
-        player2.value = 1
-        player2.opponent = player1
+        self.player2 = player2
+        self.player2.number = 2
+        self.player2.value = 1
+        self.player2.opponent = player1
 
-        self.players = (player1, GridGame.DRAW, player2)
-        self.current_player = player1
+        self.players = {self.player1.value: self.player1, 0: GridGame.DRAW, self.player2.value: self.player2}
+        self.current_player = self.player1
 
         self.size = size
         self.board = np.zeros((size, size), dtype=np.int8)
@@ -62,7 +64,7 @@ class GridGame(object):
 
     def reset(self):
         self.board = np.zeros((self.size, self.size), dtype=np.int8)
-        self.current_player = self.players[0]
+        self.current_player = self.player1
         self.moves = 0
         self.winner = None
 
@@ -90,12 +92,12 @@ class Othello(GridGame):
                     self.print_player(self.current_player, 'has no valid moves')
 
                 net_score = np.sum(self.board)
-                self.winner = self.players[np.sign(net_score)+1]
-                player1_score = np.count_nonzero(self.board == self.players[0].value)
+                self.winner = self.players[np.sign(net_score)]
+                player1_score = np.count_nonzero(self.board == self.player1.value)
 
                 print('Game over!')
-                self.print_player(self.players[0], 'score:', player1_score)
-                self.print_player(self.players[2], 'score:', player1_score+net_score)
+                self.print_player(self.player1, 'score:', player1_score)
+                self.print_player(self.player2, 'score:', player1_score+net_score)
 
                 if self.winner is GridGame.DRAW:
                     print(self.winner, 'in', self.moves, 'turns\n')
@@ -126,17 +128,16 @@ class Othello(GridGame):
 
     def reset(self):
         super().reset()
-        self.board[int(self.size/2), int(self.size/2-1)] = self.players[0].value
-        self.board[int(self.size/2-1), int(self.size/2)] = self.players[0].value
-        self.board[int(self.size/2), int(self.size/2)] = self.players[2].value
-        self.board[int(self.size/2-1), int(self.size/2-1)] = self.players[2].value
+        self.board[int(self.size/2), int(self.size/2-1)] = self.player1.value
+        self.board[int(self.size/2-1), int(self.size/2)] = self.player1.value
+        self.board[int(self.size/2), int(self.size/2)] = self.player2.value
+        self.board[int(self.size/2-1), int(self.size/2-1)] = self.player2.value
         self.valid = self.valid_moves(self.board, self.current_player)
 
     def valid_moves(self, board, player):
-        index = np.where(board == player.opponent.value)
         moves = {}
 
-        for r, c in zip(index[0], index[1]):
+        for r, c in zip(*np.where(board == player.opponent.value)):
             for d in direction:
                 point = np.array([r, c]) + d
                 if min(point) >= 0 and max(point) < self.size and board[tuple(point)] == 0:
