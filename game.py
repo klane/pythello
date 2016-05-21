@@ -31,6 +31,9 @@ class GridGame(object):
         self.verbose = verbose
         self.print_player = lambda p, *args: print(p, p.number, *args)
 
+    def game_over(self):
+        return self.winner is not None
+
     def move(self, player, move=None):
         if player is not self.current_player:
             raise ValueError('Wrong player')
@@ -54,7 +57,7 @@ class GridGame(object):
         self.valid = self.valid_moves(self.board, self.current_player)
 
     def play(self):
-        while self.winner is None:
+        while not self.game_over():
             self.move(self.current_player)
 
     def reset(self):
@@ -88,7 +91,7 @@ class Othello(GridGame):
 
                 net_score = np.sum(self.board)
                 self.winner = self.players[np.sign(net_score)+1]
-                player1_score = np.sum(self.board == self.players[0].value)
+                player1_score = np.count_nonzero(self.board == self.players[0].value)
 
                 print('Game over!')
                 self.print_player(self.players[0], 'score:', player1_score)
@@ -123,10 +126,10 @@ class Othello(GridGame):
 
     def reset(self):
         super().reset()
-        self.board[self.size/2, self.size/2-1] = self.players[0].value
-        self.board[self.size/2-1, self.size/2] = self.players[0].value
-        self.board[self.size/2, self.size/2] = self.players[2].value
-        self.board[self.size/2-1, self.size/2-1] = self.players[2].value
+        self.board[int(self.size/2), int(self.size/2-1)] = self.players[0].value
+        self.board[int(self.size/2-1), int(self.size/2)] = self.players[0].value
+        self.board[int(self.size/2), int(self.size/2)] = self.players[2].value
+        self.board[int(self.size/2-1), int(self.size/2-1)] = self.players[2].value
         self.valid = self.valid_moves(self.board, self.current_player)
 
     def valid_moves(self, board, player):
