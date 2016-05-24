@@ -17,7 +17,7 @@ else:
     player1 = GreedyAI('black')
     player2 = RandomAI('white')
 
-game = Othello(size, player1, player2, verbose)
+game = Othello(player1, player2, size, verbose)
 
 if gui:
     size = 500

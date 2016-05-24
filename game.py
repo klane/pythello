@@ -7,7 +7,7 @@ class GridGame(object):
 
     DRAW = 'Draw'
 
-    def __init__(self, size, player1, player2, verbose=False):
+    def __init__(self, player1, player2, size, verbose=False):
         if size % 2 != 0 or size <= 0:
             raise ValueError('Enter a positive even number board dimension')
 
@@ -73,8 +73,8 @@ class GridGame(object):
 
 
 class Othello(GridGame):
-    def __init__(self, size, player1, player2, verbose=False):
-        super().__init__(size, player1, player2, verbose)
+    def __init__(self, player1, player2, size=8, verbose=False):
+        super().__init__(player1, player2, size, verbose)
         self.reset()
 
     def move(self, player, move=None):
