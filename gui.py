@@ -1,20 +1,20 @@
 import numpy as np
-import tkinter as tk
 from player import AI
+from tkinter import Button, Canvas, Frame
 
 
-class GUI(tk.Frame):
+class GUI(Frame):
     def __init__(self, game, size, margin, master=None):
-        tk.Frame.__init__(self, master)
+        Frame.__init__(self, master)
         self.game = game
         self.cell_size = (size - 2*margin) / self.game.size
         self.coordinates = lambda position: self.cell_size * (np.asarray(position) + 1/2) + margin
         self.grid()
         self.master.title("Pythello")
-        self.canvas = tk.Canvas(self, width=size, height=size, background='#333', highlightthickness=0)
+        self.canvas = Canvas(self, width=size, height=size, background='#333', highlightthickness=0)
         self.canvas.create_rectangle(margin, margin, size - margin, size - margin, outline='white')
         self.refresh()
-        reset = tk.Button(self, text='Reset', command=self.reset)
+        reset = Button(self, text='Reset', command=self.reset)
 
         if any([not isinstance(player, AI) for player in [self.game.player1, self.game.player2]]):
             self.canvas.grid(row=0, column=0)
@@ -22,7 +22,7 @@ class GUI(tk.Frame):
         else:
             self.canvas.grid(row=0, column=0, columnspan=2)
             reset.grid(row=1, column=1)
-            tk.Button(self, text='Run', command=self.move).grid(row=1, column=0)
+            Button(self, text='Run', command=self.move).grid(row=1, column=0)
 
         for i in range(self.game.size):
             line_shift = self.cell_size * (i+1) + margin
