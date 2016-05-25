@@ -8,7 +8,7 @@ class GUI(Frame):
         Frame.__init__(self, master)
         self.game = game
         self.cell_size = (size - 2*margin) / self.game.size
-        self.coordinates = lambda position: self.cell_size * (np.asarray(position) + 1/2) + margin
+        self.coordinates = lambda position: self.cell_size * (np.array(position) + 1/2) + margin
         self.grid()
         self.master.title("Pythello")
         self.canvas = Canvas(self, width=size, height=size, background='#333', highlightthickness=0)
