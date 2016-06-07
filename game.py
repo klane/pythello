@@ -28,6 +28,7 @@ class GridGame(object):
         self.board = np.zeros((size, size), dtype=np.int8)
 
         self.moves = 0
+        self.score = [0]
         self.winner = None
         self.valid = []
         self.verbose = verbose
@@ -52,6 +53,7 @@ class GridGame(object):
             self.board[p] = self.current_player.value
 
         self.moves += 1
+        self.score.append(self.board.sum())
         self.next_turn()
 
     def next_turn(self):
@@ -66,6 +68,7 @@ class GridGame(object):
         self.board = np.zeros((self.size, self.size), dtype=np.int8)
         self.current_player = self.player1
         self.moves = 0
+        self.score = [0]
         self.winner = None
 
     def valid_moves(self, board, player):
@@ -91,13 +94,12 @@ class Othello(GridGame):
                 if self.verbose:
                     self.print_player(self.current_player, 'has no valid moves')
 
-                net_score = np.sum(self.board)
-                self.winner = self.players[np.sign(net_score)]
+                self.winner = self.players[np.sign(self.score[-1])]
                 player1_score = np.count_nonzero(self.board == self.player1.value)
 
                 print('Game over!')
                 self.print_player(self.player1, 'score:', player1_score)
-                self.print_player(self.player2, 'score:', player1_score+net_score)
+                self.print_player(self.player2, 'score:', player1_score+self.score[-1])
 
                 if self.winner is GridGame.DRAW:
                     print(self.winner, 'in', self.moves, 'turns\n')
