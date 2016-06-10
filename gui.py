@@ -1,28 +1,42 @@
 import numpy as np
 from player import AI
 from tkinter import Button, Canvas, Frame
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 class GUI(Frame):
     def __init__(self, game, size, margin, master=None):
-        Frame.__init__(self, master)
+        color = '#333333'
+        Frame.__init__(self, master, bg=color)
         self.game = game
         self.cell_size = (size - 2*margin) / self.game.size
         self.coordinates = lambda position: self.cell_size * (np.array(position) + 1/2) + margin
         self.grid()
         self.master.title("Pythello")
-        self.canvas = Canvas(self, width=size, height=size, background='#333', highlightthickness=0)
-        self.canvas.create_rectangle(margin, margin, size - margin, size - margin, outline='white')
-        self.refresh()
-        reset = Button(self, text='Reset', command=self.reset)
 
-        if any([not isinstance(player, AI) for player in [self.game.player1, self.game.player2]]):
-            self.canvas.grid(row=0, column=0)
-            reset.grid(row=1, column=0)
-        else:
-            self.canvas.grid(row=0, column=0, columnspan=2)
-            reset.grid(row=1, column=1)
-            Button(self, text='Run', command=self.move).grid(row=1, column=0)
+        max_turns = self.game.size**2 - 4
+        figure = Figure(figsize=(size/100, size/100), dpi=100, facecolor=color)
+        axes = figure.add_subplot(111, axisbg=color)
+        self.line = axes.plot(0, 0, 'w-', [0, max_turns], [0, 0], 'w--')[0]
+        axes.grid(True, color='w')
+        axes.set_xlim(0, max_turns)
+        axes.set_ylim(-max_turns, max_turns)
+        [tick.set_color('w') for axis in [axes.xaxis, axes.yaxis] for tick in axis.get_ticklines()]
+        [label.set_color('w') for axis in [axes.xaxis, axes.yaxis] for label in axis.get_ticklabels()]
+        [axes.spines[side].set_color('w') for side in ['top', 'bottom', 'left', 'right']]
+
+        self.canvas = Canvas(self, width=size, height=size, background=color, highlightthickness=0)
+        self.canvas.create_rectangle(margin, margin, size - margin, size - margin, outline='white')
+        self.canvas.grid(row=0, column=1, rowspan=50)
+        self.figure = FigureCanvasTkAgg(figure, master=self)
+        self.figure.get_tk_widget().grid(row=0, column=2, rowspan=50)
+        self.refresh()
+        row = 1 if all([isinstance(player, AI) for player in [self.game.player1, self.game.player2]]) else 0
+        Button(self, text='Reset', command=self.reset).grid(row=row, column=0)
+
+        if row == 1:
+            Button(self, text='Run', command=self.move).grid(row=0, column=0)
 
         for i in range(self.game.size):
             line_shift = self.cell_size * (i+1) + margin
@@ -48,6 +62,8 @@ class GUI(Frame):
             self.after(pause, self.move)
 
     def refresh(self):
+        self.line.set_data(range(len(self.game.score)), self.game.score)
+        self.figure.draw()
         [self.canvas.delete(tag) for tag in ['circle', 'text']]
 
         for position in zip(*np.nonzero(self.game.board)):
