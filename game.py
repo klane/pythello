@@ -1,6 +1,5 @@
 import numpy as np
-
-direction = ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1))
+from collections import defaultdict
 
 
 class GridGame(object):
@@ -108,26 +107,6 @@ class Othello(GridGame):
             elif self.verbose:
                 self.print_player(self.current_player, 'has valid moves')
 
-    def pieces_turned(self, board, player, point):
-        final = [tuple(point)]
-
-        for d in direction:
-            temp = point + d
-            if min(temp) >= 0 and max(temp) < self.size and board[temp[0], temp[1]] == player.opponent.value:
-                points = [tuple(temp)]
-
-                while board[points[-1]] == player.opponent.value:
-                    temp = (points[-1][0]+d[0], points[-1][1]+d[1])
-                    if min(temp) < 0 or max(temp) >= self.size:
-                        break
-                    points.append(temp)
-
-                if board[points[-1][0], points[-1][1]] == player.value:
-                    for p in points[0:-1]:
-                        final.append(p)
-
-        return final
-
     def reset(self):
         super().reset()
         self.board[int(self.size/2), int(self.size/2-1)] = self.player1.value
@@ -137,20 +116,19 @@ class Othello(GridGame):
         self.valid = self.valid_moves(self.board, self.current_player)
 
     def valid_moves(self, board, player):
-        moves = {}
+        moves = defaultdict(set)
 
-        for r, c in zip(*np.where(board == player.opponent.value)):
-            for d in direction:
-                point = np.array([r, c]) + d
-                if min(point) >= 0 and max(point) < self.size and board[tuple(point)] == 0:
-                    final = self.pieces_turned(board, player, point)
+        for point in zip(*np.where(board == player.value)):
+            for direction in ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)):
+                line = board[[x if d == 0 else slice(x, None, d) for x, d in zip(point, direction)]]
 
-                    if len(final) > 1:
-                        if tuple(point) in moves.keys():
-                            for p in final:
-                                if p not in moves[tuple(point)]:
-                                    moves[tuple(point)].append(p)
-                        else:
-                            moves[tuple(point)] = final
+                if len(line.shape) == 2:
+                    line = line.diagonal()
+
+                n = np.argmax(line == 0)
+
+                if np.all(line[1:n] == player.opponent.value) and n > 1:
+                    (rows, cols) = [[x]*n if d == 0 else range(x+d, x + d*(n+1), d) for x, d in zip(point, direction)]
+                    moves[tuple(point + n*np.array(direction))].update((r, c) for r, c in zip(rows, cols))
 
         return moves
