@@ -29,7 +29,7 @@ class GridGame(object):
         self.moves = 0
         self.score = [0]
         self.winner = None
-        self.valid = []
+        self.valid = {}
         self.verbose = verbose
         self.print_player = lambda p, *args: print(p, p.number, *args)
 
