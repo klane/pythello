@@ -36,12 +36,9 @@ class GridGame(object):
     def game_over(self):
         return self.winner is not None
 
-    def move(self, player, move=None):
+    def move(self, player, move):
         if player is not self.current_player:
             raise ValueError('Wrong player')
-
-        if move is None:
-            move = player.move(self)
 
         if move not in self.valid:
             raise ValueError('Invalid move')
@@ -61,7 +58,7 @@ class GridGame(object):
 
     def play(self):
         while not self.game_over():
-            self.move(self.current_player)
+            self.move(self.current_player, self.current_player.move(self))
 
     def reset(self):
         self.board = np.zeros((self.size, self.size), dtype=np.int8)
