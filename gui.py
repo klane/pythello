@@ -6,7 +6,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 class GUI(Frame):
-    def __init__(self, game, size, margin, master=None):
+    def __init__(self, game, size, margin, colors=('black', 'white'), master=None):
         color = '#333333'
         Frame.__init__(self, master, bg=color)
         self.game = game
@@ -14,6 +14,7 @@ class GUI(Frame):
         self.coordinates = lambda position: self.cell_size * (np.array(position) + 1/2) + margin
         self.grid()
         self.master.title("Pythello")
+        self.colors = colors
 
         max_turns = self.game.size**2 - 4
         figure = Figure(figsize=(size/100, size/100), dpi=100, facecolor=color)
@@ -67,7 +68,8 @@ class GUI(Frame):
         [self.canvas.delete(tag) for tag in ['circle', 'text']]
 
         for position in zip(*np.nonzero(self.game.board)):
-            self.draw_piece(position, (self.cell_size-2) / 2, self.game.players[self.game.board[position]].color)
+            color = self.colors[self.game.players[self.game.board[position]].number - 1]
+            self.draw_piece(position, (self.cell_size-2) / 2, color)
 
         if not isinstance(self.game.current_player, AI):
             for position in self.game.valid:

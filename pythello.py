@@ -8,14 +8,14 @@ gui = True
 verbose = True
 
 if players == 2:
-    player1 = Player('black')
-    player2 = Player('white')
+    player1 = Player()
+    player2 = Player()
 elif players == 1:
-    player1 = Player('black')
-    player2 = GreedyAI('white')
+    player1 = Player()
+    player2 = GreedyAI()
 else:
-    player1 = GreedyAI('black')
-    player2 = RandomAI('white')
+    player1 = GreedyAI()
+    player2 = RandomAI()
 
 game = Othello(player1, player2, size, verbose)
 

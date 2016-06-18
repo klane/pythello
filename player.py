@@ -3,8 +3,7 @@ from collections import defaultdict
 
 
 class Player(object):
-    def __init__(self, color, name='Player'):
-        self.color = color
+    def __init__(self, name='Player'):
         self.name = name
 
     def __repr__(self):
@@ -17,8 +16,8 @@ class AI(Player):
 
 
 class GreedyAI(AI):
-    def __init__(self, color):
-        super().__init__(color, 'Greedy AI')
+    def __init__(self):
+        super().__init__('Greedy AI')
 
     def move(self, valid):
         num_turned = defaultdict(list)
@@ -30,8 +29,8 @@ class GreedyAI(AI):
 
 
 class RandomAI(AI):
-    def __init__(self, color):
-        super().__init__(color, 'Random AI')
+    def __init__(self):
+        super().__init__('Random AI')
 
     def move(self, valid):
         return random.choice(list(valid.keys()))
