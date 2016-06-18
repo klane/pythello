@@ -1,23 +1,24 @@
 from game import GridGame, Othello
-from player import Player, GreedyAI, RandomAI
+from player import Player, GreedyAI
+from easyAI import AI_Player, Negamax
 from gui import GUI
 
 players = 0
 size = 8
 gui = True
-verbose = True
+verbose = False
 
 if players == 2:
-    player1 = Player('black')
-    player2 = Player('white')
+    player1 = Player()
+    player2 = Player()
 elif players == 1:
-    player1 = Player('black')
-    player2 = GreedyAI('white')
+    player1 = Player()
+    player2 = GreedyAI()
 else:
-    player1 = GreedyAI('black')
-    player2 = RandomAI('white')
+    player1 = GreedyAI()
+    player2 = AI_Player(Negamax(4, scoring=None, win_score=size**2/2))
 
-game = Othello(player1, player2, size, verbose)
+game = Othello((player1, player2), size, verbose)
 
 if gui:
     size = 500
@@ -28,7 +29,7 @@ elif players == 0:
     results = {player1: 0, player2: 0, GridGame.DRAW: 0}
 
     for i in range(games):
-        game.play()
+        game.play(nmoves=100, verbose=verbose)
         results[game.winner] += 1
         game.reset()
 

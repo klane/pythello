@@ -1,12 +1,12 @@
 import numpy as np
-from player import AI
+from easyAI import AI_Player
 from tkinter import Button, Canvas, Frame
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 class GUI(Frame):
-    def __init__(self, game, size, margin, master=None):
+    def __init__(self, game, size, margin, colors=('black', 'white'), master=None):
         color = '#333333'
         Frame.__init__(self, master, bg=color)
         self.game = game
@@ -14,6 +14,7 @@ class GUI(Frame):
         self.coordinates = lambda position: self.cell_size * (np.array(position) + 1/2) + margin
         self.grid()
         self.master.title("Pythello")
+        self.colors = colors
 
         max_turns = self.game.size**2 - 4
         figure = Figure(figsize=(size/100, size/100), dpi=100, facecolor=color)
@@ -32,7 +33,7 @@ class GUI(Frame):
         self.figure = FigureCanvasTkAgg(figure, master=self)
         self.figure.get_tk_widget().grid(row=0, column=2, rowspan=50)
         self.refresh()
-        row = 1 if all([isinstance(player, AI) for player in [self.game.player1, self.game.player2]]) else 0
+        row = 1 if all([isinstance(player, AI_Player) for player in [self.game.player1, self.game.player2]]) else 0
         Button(self, text='Reset', command=self.reset).grid(row=row, column=0)
 
         if row == 1:
@@ -51,14 +52,15 @@ class GUI(Frame):
 
     def move(self, pause=10, event=None):
         if event is None:
-            self.game.move(self.game.current_player)
+            move = self.game.player.ask_move(self.game)
         else:
             move = eval(self.canvas.gettags(event.widget.find_withtag("current"))[-2])
-            self.game.move(self.game.current_player, move)
 
+        self.game.make_move(move)
+        self.game.switch_player()
         self.refresh()
 
-        if isinstance(self.game.current_player, AI) and not self.game.game_over():
+        if isinstance(self.game.player, AI_Player) and not self.game.is_over():
             self.after(pause, self.move)
 
     def refresh(self):
@@ -67,9 +69,10 @@ class GUI(Frame):
         [self.canvas.delete(tag) for tag in ['circle', 'text']]
 
         for position in zip(*np.nonzero(self.game.board)):
-            self.draw_piece(position, (self.cell_size-2) / 2, self.game.players[self.game.board[position]].color)
+            number = self.game.player_lookup[self.game.board[position]].number
+            self.draw_piece(position, (self.cell_size-2) / 2, self.colors[number - 1])
 
-        if not isinstance(self.game.current_player, AI):
+        if not isinstance(self.game.player, AI_Player):
             for position in self.game.valid:
                 (y, x) = self.coordinates(position)
                 turned = len(self.game.valid[position]) - 1
