@@ -72,6 +72,9 @@ class GridGame(object):
 
 
 class Othello(GridGame):
+
+    DIRECTIONS = [np.array([i, j]) for i in [-1, 0, 1] for j in [-1, 0, 1] if (i != 0 or j != 0)]
+
     def __init__(self, player1, player2, size=8, verbose=False):
         super().__init__(player1, player2, size, verbose)
         self.reset()
@@ -116,7 +119,7 @@ class Othello(GridGame):
         moves = defaultdict(set)
 
         for point in zip(*np.where(board == player.value)):
-            for direction in ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)):
+            for direction in Othello.DIRECTIONS:
                 line = board[[x if d == 0 else slice(x, None, d) for x, d in zip(point, direction)]]
 
                 if len(line.shape) == 2:
@@ -126,6 +129,6 @@ class Othello(GridGame):
 
                 if np.all(line[1:n] == player.opponent.value) and n > 1:
                     (rows, cols) = [[x]*n if d == 0 else range(x+d, x + d*(n+1), d) for x, d in zip(point, direction)]
-                    moves[tuple(point + n*np.array(direction))].update((r, c) for r, c in zip(rows, cols))
+                    moves[tuple(point + n*direction)].update((r, c) for r, c in zip(rows, cols))
 
         return moves
