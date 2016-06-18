@@ -41,7 +41,7 @@ class GridGame(object):
             raise ValueError('Wrong player')
 
         if move is None:
-            move = player.move(self.valid)
+            move = player.move(self)
 
         if move not in self.valid:
             raise ValueError('Invalid move')

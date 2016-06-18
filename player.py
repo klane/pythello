@@ -11,7 +11,7 @@ class Player(object):
 
 
 class AI(Player):
-    def move(self, valid):
+    def move(self, game):
         pass
 
 
@@ -19,10 +19,10 @@ class GreedyAI(AI):
     def __init__(self):
         super().__init__('Greedy AI')
 
-    def move(self, valid):
+    def move(self, game):
         num_turned = defaultdict(list)
 
-        for k, v in valid.items():
+        for k, v in game.valid.items():
             num_turned[len(v)].append(k)
 
         return random.choice(num_turned[max(num_turned.keys())])
@@ -32,5 +32,5 @@ class RandomAI(AI):
     def __init__(self):
         super().__init__('Random AI')
 
-    def move(self, valid):
-        return random.choice(list(valid.keys()))
+    def move(self, game):
+        return random.choice(list(game.valid.keys()))
