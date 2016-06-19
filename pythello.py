@@ -1,5 +1,6 @@
 from game import GridGame, Othello
-from player import Player, GreedyAI, RandomAI
+from player import Player, AI
+from ai import greedy_move, random_move
 from gui import GUI
 
 players = 0
@@ -12,10 +13,10 @@ if players == 2:
     player2 = Player()
 elif players == 1:
     player1 = Player()
-    player2 = GreedyAI()
+    player2 = AI(greedy_move, 'Greedy AI')
 else:
-    player1 = GreedyAI()
-    player2 = RandomAI()
+    player1 = AI(greedy_move, 'Greedy AI')
+    player2 = AI(random_move, 'Random AI')
 
 game = Othello(player1, player2, size, verbose)
 
