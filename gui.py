@@ -56,7 +56,7 @@ class GUI(Frame):
         else:
             move = eval(self.canvas.gettags(event.widget.find_withtag("current"))[-2])
 
-        self.game.move(self.game.current_player, move)
+        self.game.move(move)
         self.refresh()
 
         if isinstance(self.game.current_player, AI) and not self.game.game_over():

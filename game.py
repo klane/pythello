@@ -1,3 +1,4 @@
+import abc
 import numpy as np
 from collections import defaultdict
 
@@ -29,24 +30,19 @@ class GridGame(object):
         self.moves = 0
         self.score = [0]
         self.winner = None
-        self.valid = {}
+        self.valid = defaultdict(set)
         self.verbose = verbose
         self.print_player = lambda p, *args: print(p, p.number, *args)
 
     def game_over(self):
         return self.winner is not None
 
-    def move(self, player, move):
-        if player is not self.current_player:
-            raise ValueError('Wrong player')
-
+    def move(self, move):
         if move not in self.valid:
             raise ValueError('Invalid move')
 
-        pieces_turned = self.valid[move]
-
-        for p in pieces_turned:
-            self.board[p] = self.current_player.value
+        for piece in self.valid[move]:
+            self.board[piece] = self.current_player.value
 
         self.moves += 1
         self.score.append(self.board.sum())
@@ -54,11 +50,11 @@ class GridGame(object):
 
     def next_turn(self):
         self.current_player = self.current_player.opponent
-        self.valid = self.valid_moves(self.board, self.current_player)
+        self.valid_moves()
 
     def play(self):
         while not self.game_over():
-            self.move(self.current_player, self.current_player.move(self))
+            self.move(self.current_player.move(self))
 
     def reset(self):
         self.board = np.zeros((self.size, self.size), dtype=np.int8)
@@ -67,8 +63,9 @@ class GridGame(object):
         self.score = [0]
         self.winner = None
 
-    def valid_moves(self, board, player):
-        pass
+    @abc.abstractmethod
+    def valid_moves(self):
+        """Populate dictionary self.valid that maps valid moves to the pieces gained by the current player."""
 
 
 class Othello(GridGame):
@@ -79,9 +76,7 @@ class Othello(GridGame):
         super().__init__(player1, player2, size, verbose)
         self.reset()
 
-    def move(self, player, move=None):
-        super().move(player, move)
-
+    def game_over(self):
         if len(self.valid) == 0:
             if self.verbose:
                 self.print_player(self.current_player, 'has no valid moves')
@@ -107,28 +102,28 @@ class Othello(GridGame):
             elif self.verbose:
                 self.print_player(self.current_player, 'has valid moves')
 
+        return super().game_over()
+
     def reset(self):
         super().reset()
         self.board[int(self.size/2), int(self.size/2-1)] = self.player1.value
         self.board[int(self.size/2-1), int(self.size/2)] = self.player1.value
         self.board[int(self.size/2), int(self.size/2)] = self.player2.value
         self.board[int(self.size/2-1), int(self.size/2-1)] = self.player2.value
-        self.valid = self.valid_moves(self.board, self.current_player)
+        self.valid_moves()
 
-    def valid_moves(self, board, player):
-        moves = defaultdict(set)
+    def valid_moves(self):
+        self.valid.clear()
 
-        for point in zip(*np.where(board == player.value)):
+        for point in zip(*np.where(self.board == self.current_player.value)):
             for direction in Othello.DIRECTIONS:
-                line = board[[x if d == 0 else slice(x, None, d) for x, d in zip(point, direction)]]
+                line = self.board[[x if d == 0 else slice(x, None, d) for x, d in zip(point, direction)]]
 
                 if len(line.shape) == 2:
                     line = line.diagonal()
 
                 n = np.argmax(line == 0)
 
-                if np.all(line[1:n] == player.opponent.value) and n > 1:
+                if np.all(line[1:n] == self.current_player.opponent.value) and n > 1:
                     (rows, cols) = [[x]*n if d == 0 else range(x+d, x + d*(n+1), d) for x, d in zip(point, direction)]
-                    moves[tuple(point + n*direction)].update((r, c) for r, c in zip(rows, cols))
-
-        return moves
+                    self.valid[tuple(point + n*direction)].update((r, c) for r, c in zip(rows, cols))
