@@ -17,7 +17,7 @@ class Negamax(object):
             return [self.scoring(game)]
 
         best_val = -np.inf
-        best_move = 0
+        best_move = None
 
         for move in game.valid:
             child = deepcopy(game)
