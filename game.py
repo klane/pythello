@@ -48,6 +48,8 @@ class GridGame(object):
         self.score.append(self.board.sum())
         self.next_turn()
 
+        return self
+
     def next_turn(self):
         self.current_player = self.current_player.opponent
         self.valid_moves()
