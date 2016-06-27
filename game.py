@@ -93,7 +93,7 @@ class Othello(GridGame):
 
                 print('Game over!')
                 self.print_player(self.player1, 'score:', player1_score)
-                self.print_player(self.player2, 'score:', player1_score+self.score[-1])
+                self.print_player(self.player2, 'score:', player1_score + self.player2.value * self.score[-1])
 
                 if self.winner is GridGame.DRAW:
                     print(self.winner, 'in', self.moves, 'turns\n')
