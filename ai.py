@@ -10,30 +10,37 @@ class Negamax(object):
         self.scoring = scoring
 
     def __call__(self, game):
-        return self.negamax(game, self.depth)[1]
-
-    def negamax(self, game, depth, alpha=-np.inf, beta=np.inf):
-        if depth == 0 or len(game.valid) == 0:
-            return [self.scoring(game)]
-
-        best_val = -np.inf
         best_move = None
+        best_score = -np.inf
 
         for move in game.valid:
             child = deepcopy(game)
             child.move(move)
-            val = -self.negamax(child, depth - 1, -beta, -alpha)[0]
+            score = -self.negamax(child, self.depth-1)
 
-            if val > best_val:
-                best_val = val
+            if score > best_score:
                 best_move = move
+                best_score = score
 
-            alpha = max(alpha, val)
+        return best_move
+
+    def negamax(self, game, depth, alpha=-np.inf, beta=np.inf):
+        if depth == 0 or len(game.valid) == 0:
+            return self.scoring(game)
+
+        best_score = -np.inf
+
+        for move in game.valid:
+            child = deepcopy(game)
+            child.move(move)
+            score = -self.negamax(child, depth-1, -beta, -alpha)
+            best_score = max(best_score, score)
+            alpha = max(alpha, score)
 
             if alpha >= beta:
                 break
 
-        return best_val, best_move
+        return best_score
 
 
 def greedy_move(game):
