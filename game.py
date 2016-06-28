@@ -34,7 +34,20 @@ class GridGame(object):
         self.verbose = verbose
         self.print_player = lambda p, *args: print(p, p.number, *args)
 
-    def game_over(self):
+    def end_game(self):
+        self.winner = self.players[np.sign(self.score[-1])]
+        player1_score = np.count_nonzero(self.board == self.player1.value)
+
+        print('Game over!')
+        self.print_player(self.player1, 'score:', player1_score)
+        self.print_player(self.player2, 'score:', player1_score + self.player2.value * self.score[-1])
+
+        if self.winner is GridGame.DRAW:
+            print(self.winner, 'in', self.moves, 'turns\n')
+        else:
+            self.print_player(self.winner, 'in', self.moves, 'turns\n')
+
+    def is_over(self):
         return self.winner is not None
 
     def move(self, move):
@@ -55,7 +68,7 @@ class GridGame(object):
         self.valid_moves()
 
     def play(self):
-        while not self.game_over():
+        while not self.is_over():
             self.move(self.current_player.move(self))
 
     def reset(self):
@@ -78,7 +91,7 @@ class Othello(GridGame):
         super().__init__(player1, player2, size, verbose)
         self.reset()
 
-    def game_over(self):
+    def is_over(self):
         if len(self.valid) == 0:
             if self.verbose:
                 self.print_player(self.current_player, 'has no valid moves')
@@ -90,21 +103,11 @@ class Othello(GridGame):
                 if self.verbose:
                     self.print_player(self.current_player, 'has no valid moves')
 
-                self.winner = self.players[np.sign(self.score[-1])]
-                player1_score = np.count_nonzero(self.board == self.player1.value)
-
-                print('Game over!')
-                self.print_player(self.player1, 'score:', player1_score)
-                self.print_player(self.player2, 'score:', player1_score + self.player2.value * self.score[-1])
-
-                if self.winner is GridGame.DRAW:
-                    print(self.winner, 'in', self.moves, 'turns\n')
-                else:
-                    self.print_player(self.winner, 'in', self.moves, 'turns\n')
+                self.end_game()
             elif self.verbose:
                 self.print_player(self.current_player, 'has valid moves')
 
-        return super().game_over()
+        return super().is_over()
 
     def reset(self):
         super().reset()
