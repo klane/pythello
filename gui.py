@@ -14,7 +14,7 @@ class GUI(Frame):
         self.coordinates = lambda position: self.cell_size * (np.array(position) + 1/2) + margin
         self.grid()
         self.master.title("Pythello")
-        self.colors = colors
+        self.colors = colors[::-1]  # Flip color order so that the first color input corresponds to player 1
 
         max_turns = self.game.size**2 - 4
         figure = Figure(figsize=(size/100, size/100), dpi=100, facecolor=color)
@@ -33,7 +33,7 @@ class GUI(Frame):
         self.figure = FigureCanvasTkAgg(figure, master=self)
         self.figure.get_tk_widget().grid(row=0, column=2, rowspan=50)
         self.refresh()
-        row = 1 if all([isinstance(player, AI) for player in [self.game.player1, self.game.player2]]) else 0
+        row = 1 if all([isinstance(player, AI) for player in self.game.players]) else 0
         Button(self, text='Reset', command=self.reset).grid(row=row, column=0)
 
         if row == 1:
@@ -52,14 +52,14 @@ class GUI(Frame):
 
     def move(self, pause=10, event=None):
         if event is None:
-            move = self.game.current_player.move(self.game)
+            move = self.game.player.move(self.game)
         else:
             move = eval(self.canvas.gettags(event.widget.find_withtag("current"))[-2])
 
         self.game.move(move)
         self.refresh()
 
-        if isinstance(self.game.current_player, AI) and not self.game.is_over():
+        if isinstance(self.game.player, AI) and not self.game.is_over():
             self.after(pause, self.move)
 
     def refresh(self):
@@ -68,10 +68,10 @@ class GUI(Frame):
         [self.canvas.delete(tag) for tag in ['circle', 'text']]
 
         for position in zip(*np.nonzero(self.game.board)):
-            color = self.colors[self.game.players[self.game.board[position]].number - 1]
+            color = self.colors[int((self.game.board[position] + 1) / 2)]
             self.draw_piece(position, (self.cell_size-2) / 2, color)
 
-        if not isinstance(self.game.current_player, AI):
+        if not isinstance(self.game.player, AI):
             for position in self.game.valid:
                 (y, x) = self.coordinates(position)
                 turned = len(self.game.valid[position]) - 1

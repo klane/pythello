@@ -5,7 +5,7 @@ from copy import deepcopy
 
 
 class Negamax(object):
-    def __init__(self, depth, scoring=lambda game: game.board.sum() * game.current_player.value):
+    def __init__(self, depth, scoring=lambda game: game.board.sum() * game.value):
         self.depth = depth
         self.scoring = scoring
 
