@@ -50,7 +50,6 @@ class GridGame(object):
 
         self._score.append(self._board.sum())
         self.next_turn()
-
         return self
 
     def next_turn(self):
