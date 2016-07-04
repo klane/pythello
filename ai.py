@@ -11,12 +11,13 @@ def default_scoring(game):
 
 
 class Negamax(object):
-    def __init__(self, depth, scoring=default_scoring):
+    def __init__(self, depth, scoring=default_scoring, processes=4):
         self.depth = depth
         self.scoring = scoring
+        self.processes = processes
 
     def __call__(self, game):
-        scores = Pool(4).map(partial(self.negamax_root, game=game), game.valid)
+        scores = Pool(self.processes).map(partial(self.negamax_root, game=game), game.valid)
         return list(game.valid)[np.argmax(scores)]
 
     def negamax_root(self, move, game):
