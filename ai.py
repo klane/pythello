@@ -2,16 +2,25 @@ import numpy as np
 import random
 from collections import defaultdict
 from copy import deepcopy
+from functools import partial
+from multiprocessing import Pool
+
+
+def default_scoring(game):
+    return game.board.sum() * game.value
 
 
 class Negamax(object):
-    def __init__(self, depth, scoring=lambda game: game.board.sum() * game.value):
+    def __init__(self, depth, scoring=default_scoring):
         self.depth = depth
         self.scoring = scoring
 
     def __call__(self, game):
-        scores = [-self.negamax(deepcopy(game).move(move), self.depth-1) for move in game.valid]
+        scores = Pool(4).map(partial(self.negamax_root, game=game), game.valid)
         return list(game.valid)[np.argmax(scores)]
+
+    def negamax_root(self, move, game):
+        return -self.negamax(deepcopy(game).move(move), self.depth-1)
 
     def negamax(self, game, depth, alpha=-np.inf, beta=np.inf):
         if depth == 0 or len(game.valid) == 0:
