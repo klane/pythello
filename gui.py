@@ -34,10 +34,10 @@ class GUI(Frame):
         self.figure.get_tk_widget().grid(row=0, column=2, rowspan=50)
         self.refresh()
         row = 1 if all([isinstance(player, AI) for player in self.game.players]) else 0
-        Button(self, text='Reset', command=self.reset).grid(row=row, column=0)
+        Button(self, text='Reset', highlightbackground=color, command=self.reset).grid(row=row, column=0)
 
         if row == 1:
-            Button(self, text='Run', command=self.move).grid(row=0, column=0)
+            Button(self, text='Run', highlightbackground=color, command=self.move).grid(row=0, column=0)
 
         for i in range(self.game.size):
             line_shift = self.cell_size * (i+1) + margin
