@@ -11,7 +11,7 @@ class GridGame(object):
         if size % 2 != 0 or size <= 0:
             raise ValueError('Enter a positive even number board dimension')
 
-        self._players = [player2, GridGame.DRAW, player1]  # Player 1 last so a positive net score is a player 1 win
+        self._players = (player2, GridGame.DRAW, player1)  # Player 1 last so a positive net score is a player 1 win
         self._size = size
         self._verbose = verbose
         self._board, self._score, self._valid, self._value, self._winner = [None] * 5
