@@ -4,16 +4,13 @@ from collections import defaultdict
 from copy import deepcopy
 from functools import partial
 from multiprocessing import Pool
-
-
-def default_scoring(game):
-    return game.board.sum() * game.value
+from score import greedy_score
 
 
 class Negamax(object):
-    def __init__(self, depth, scoring=default_scoring, processes=4):
+    def __init__(self, depth, score=greedy_score, processes=4):
         self.depth = depth
-        self.scoring = scoring
+        self.score = score
         self.processes = processes
 
     def __call__(self, game):
@@ -25,7 +22,7 @@ class Negamax(object):
 
     def negamax(self, game, depth, alpha=-np.inf, beta=np.inf):
         if depth == 0 or len(game.valid) == 0:
-            return self.scoring(game)
+            return self.score(game)
 
         best_score = -np.inf
 
