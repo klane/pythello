@@ -59,7 +59,7 @@ class GUI(Frame):
         self.game.move(move)
         self.refresh()
 
-        if isinstance(self.game.player, AI) and not self.game.is_over():
+        if not self.game.is_over() and isinstance(self.game.player, AI):
             self.after(pause, self.move)
 
     def refresh(self):
