@@ -63,9 +63,10 @@ class GUI(Frame):
             move = eval(self.canvas.gettags(event.widget.find_withtag("current"))[-2])
 
         self.game.move(move)
+        is_over = self.game.is_over()
         self.refresh()
 
-        if not self.game.is_over() and isinstance(self.game.player, AI) and self.running:
+        if not is_over and isinstance(self.game.player, AI) and self.running:
             self.after(pause, self.move)
 
     def pause(self):
