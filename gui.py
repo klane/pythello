@@ -12,6 +12,7 @@ class GUI(Frame):
         self.game = game
         self.cell_size = (size - 2*margin) / self.game.size
         self.coordinates = lambda position: self.cell_size * (np.array(position) + 1/2) + margin
+        self.player_move = lambda event: self.move(pause=1000, event=event)
         self.grid()
         self.master.title("Pythello")
         self.colors = colors[::-1]  # Flip color order so that the first color input corresponds to player 1
@@ -33,11 +34,16 @@ class GUI(Frame):
         self.figure = FigureCanvasTkAgg(figure, master=self)
         self.figure.get_tk_widget().grid(row=0, column=2, rowspan=50)
         self.refresh()
-        row = 1 if all([isinstance(player, AI) for player in self.game.players]) else 0
-        Button(self, text='Reset', highlightbackground=color, command=self.reset).grid(row=row, column=0)
 
-        if row == 1:
-            Button(self, text='Run', highlightbackground=color, command=self.move).grid(row=0, column=0)
+        if all([isinstance(player, AI) for player in self.game.players]):
+            Button(self, text='Run', highlightbackground=color, command=self.run).grid(row=0, column=0)
+            Button(self, text='Pause', highlightbackground=color, command=self.pause).grid(row=1, column=0)
+            Button(self, text='Step', highlightbackground=color, command=self.step).grid(row=2, column=0)
+            Button(self, text='Reset', highlightbackground=color, command=self.reset).grid(row=3, column=0)
+            self.running = False
+        else:
+            Button(self, text='Reset', highlightbackground=color, command=self.reset).grid(row=0, column=0)
+            self.running = True
 
         for i in range(self.game.size):
             line_shift = self.cell_size * (i+1) + margin
@@ -59,8 +65,11 @@ class GUI(Frame):
         self.game.move(move)
         self.refresh()
 
-        if not self.game.is_over() and isinstance(self.game.player, AI):
+        if not self.game.is_over() and isinstance(self.game.player, AI) and self.running:
             self.after(pause, self.move)
+
+    def pause(self):
+        self.running = False
 
     def refresh(self):
         self.line.set_data(range(len(self.game.score)), self.game.score)
@@ -78,8 +87,17 @@ class GUI(Frame):
                 valid = self.draw_piece(position, self.cell_size / 4, 'green')
                 self.canvas.addtag(str(position), 'withtag', valid)
                 text = self.canvas.create_text(x+1, y+1, text=str(turned), tags=('text', str(position)))
-                [self.canvas.tag_bind(tag, "<Button-1>", lambda event: self.move(1000, event)) for tag in [valid, text]]
+                [self.canvas.tag_bind(tag, "<Button-1>", self.player_move) for tag in [valid, text]]
 
     def reset(self):
+        self.running = not all([isinstance(player, AI) for player in self.game.players])
         self.game.reset()
         self.refresh()
+
+    def run(self):
+        self.running = True
+        self.move()
+
+    def step(self):
+        if not self.running:
+            self.move()
