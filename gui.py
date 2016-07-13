@@ -36,9 +36,9 @@ class GUI(Frame):
         self.refresh()
 
         if all([isinstance(player, AI) for player in self.game.players]):
-            Button(self, text='Run', highlightbackground=color, command=self.run).grid(row=0, column=0)
-            Button(self, text='Pause', highlightbackground=color, command=self.pause).grid(row=1, column=0)
-            Button(self, text='Step', highlightbackground=color, command=self.step).grid(row=2, column=0)
+            Button(self, text='Play', highlightbackground=color, command=self.play).grid(row=0, column=0)
+            Button(self, text='Move', highlightbackground=color, command=self.move).grid(row=1, column=0)
+            Button(self, text='Pause', highlightbackground=color, command=self.pause).grid(row=2, column=0)
             Button(self, text='Reset', highlightbackground=color, command=self.reset).grid(row=3, column=0)
             self.running = False
         else:
@@ -72,6 +72,10 @@ class GUI(Frame):
     def pause(self):
         self.running = False
 
+    def play(self):
+        self.running = True
+        self.move()
+
     def refresh(self):
         self.line.set_data(range(len(self.game.score)), self.game.score)
         self.figure.draw()
@@ -94,11 +98,3 @@ class GUI(Frame):
         self.running = not all([isinstance(player, AI) for player in self.game.players])
         self.game.reset()
         self.refresh()
-
-    def run(self):
-        self.running = True
-        self.move()
-
-    def step(self):
-        if not self.running:
-            self.move()
