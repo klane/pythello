@@ -36,10 +36,12 @@ class GUI(Frame):
         self.refresh()
 
         if all([isinstance(player, AI) for player in self.game.players]):
-            Button(self, text='Play', highlightbackground=color, command=self.play).grid(row=0, column=0)
-            Button(self, text='Move', highlightbackground=color, command=self.move).grid(row=1, column=0)
-            Button(self, text='Pause', highlightbackground=color, command=self.pause).grid(row=2, column=0)
-            Button(self, text='Reset', highlightbackground=color, command=self.reset).grid(row=3, column=0)
+            self.play_button = Button(self, text='Play', highlightbackground=color, command=self.play)
+            self.move_button = Button(self, text='Move', highlightbackground=color, command=self.move)
+            self.reset_button = Button(self, text='Reset', highlightbackground=color, command=self.reset)
+            self.play_button.grid(row=0, column=0)
+            self.move_button.grid(row=1, column=0)
+            self.reset_button.grid(row=2, column=0)
             self.running = False
         else:
             Button(self, text='Reset', highlightbackground=color, command=self.reset).grid(row=0, column=0)
@@ -51,6 +53,12 @@ class GUI(Frame):
             self.canvas.create_text(line_shift - self.cell_size/2, margin-10, text=chr(97+i), fill='white')
             self.canvas.create_line(margin, line_shift, size - margin, line_shift, fill='white')
             self.canvas.create_line(line_shift, margin, line_shift, size - margin, fill='white')
+
+    def configure_buttons(self):
+        (state, text, command) = ('disabled', 'Pause', self.pause) if self.running else ('normal', 'Reset', self.reset)
+        self.play_button.config(state=state)
+        self.move_button.config(state=state)
+        self.reset_button.config(text=text, command=command)
 
     def draw_piece(self, position, radius, color):
         (y, x) = self.coordinates(position)
@@ -68,12 +76,16 @@ class GUI(Frame):
 
         if not is_over and isinstance(self.game.player, AI) and self.running:
             self.after(pause, self.move)
+        elif is_over:
+            self.reset_button.config(text='Reset', command=self.reset)
 
     def pause(self):
         self.running = False
+        self.configure_buttons()
 
     def play(self):
         self.running = True
+        self.configure_buttons()
         self.move()
 
     def refresh(self):
@@ -98,3 +110,6 @@ class GUI(Frame):
         self.running = not all([isinstance(player, AI) for player in self.game.players])
         self.game.reset()
         self.refresh()
+
+        if not self.running:
+            self.configure_buttons()
