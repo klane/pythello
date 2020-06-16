@@ -14,8 +14,9 @@ class Negamax(object):
         self.processes = processes
 
     def __call__(self, game):
-        scores = Pool(self.processes).map(partial(self.negamax_root, game=game), game.valid)
-        return list(game.valid)[np.argmax(scores)]
+        with Pool(self.processes) as pool:
+            scores = pool.map(partial(self.negamax_root, game=game), game.valid)
+            return list(game.valid)[np.argmax(scores)]
 
     def negamax_root(self, move, game):
         return -self.negamax(deepcopy(game).move(move), self.depth-1)
