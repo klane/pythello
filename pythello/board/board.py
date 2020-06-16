@@ -12,6 +12,11 @@ class Board(ABC):
     def get_pieces(self, player):
         """Get all pieces on the board for the specified player."""
 
+    @property
+    @abstractmethod
+    def num_empty(self):
+        """Return the number of empty spaces on the board."""
+
     @abstractmethod
     def place_piece(self, piece, player):
         """Place a piece on the board for the specified player."""

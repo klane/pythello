@@ -14,6 +14,10 @@ class GridBoard(Board):
     def get_pieces(self, player):
         return np.nonzero(self._board == player)
 
+    @property
+    def num_empty(self):
+        return np.count_nonzero(self._board == 0)
+
     def place_piece(self, piece, player):
         self._board[piece] = player
 
