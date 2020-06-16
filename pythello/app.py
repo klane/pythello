@@ -1,5 +1,5 @@
 import numpy as np
-from player import AI
+from pythello.player import AI
 from tkinter import Button, Canvas, Frame
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg

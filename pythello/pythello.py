@@ -1,8 +1,8 @@
-from game import GridGame, Othello
-from player import Player, AI
-from ai import Negamax, greedy_move
-from score import EdgeScore
-from gui import GUI
+from pythello.game import GridGame, Othello
+from pythello.player import Player, AI
+from pythello.ai.strategy import Negamax, greedy_move
+from pythello.ai.score import EdgeScore
+from pythello.app import GUI
 
 players = 0
 size = 8

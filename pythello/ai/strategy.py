@@ -4,7 +4,7 @@ from collections import defaultdict
 from copy import deepcopy
 from functools import partial
 from multiprocessing import Pool
-from score import greedy_score
+from pythello.ai.score import greedy_score
 
 
 class Negamax(object):
