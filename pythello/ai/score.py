@@ -11,11 +11,11 @@ class EdgeScore(object):
         self.board_score[[0, 0, size-1, size-1], [0, size-1, 0, size-1]] = 9
 
     def __call__(self, game):
-        if np.count_nonzero(game.board == 0) > game.size ** 2 / 2:
+        if np.count_nonzero(game.board == 0) > game.board.size ** 2 / 2:
             return (game.board * game.value * self.board_score).sum()
         else:
             return greedy_score(game)
 
 
 def greedy_score(game):
-    return game.board.sum() * game.value
+    return game.board.score() * game.value
