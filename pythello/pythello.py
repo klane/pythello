@@ -1,4 +1,5 @@
 from pythello.game import GridGame, Othello
+from pythello.board.grid import GridBoard
 from pythello.player import Player, AI
 from pythello.ai.strategy import Negamax, greedy_move
 from pythello.ai.score import EdgeScore
@@ -19,7 +20,8 @@ else:
     player1 = AI(greedy_move, 'Greedy AI')
     player2 = AI(Negamax(4, score=EdgeScore(size)), 'Negamax AI')
 
-game = Othello(player1, player2, size, verbose)
+board = GridBoard(size)
+game = Othello(player1, player2, board, verbose)
 
 if gui:
     size = 500

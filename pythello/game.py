@@ -1,20 +1,15 @@
-import abc
 import numpy as np
-from collections import defaultdict
 
 
 class GridGame(object):
 
     DRAW = 'Draw'
 
-    def __init__(self, player1, player2, size, verbose=False):
-        if size % 2 != 0 or size <= 0:
-            raise ValueError('Enter a positive even number board dimension')
-
+    def __init__(self, player1, player2, board, verbose=False):
         self._players = (player2, GridGame.DRAW, player1)  # Player 1 last so a positive net score is a player 1 win
-        self._size = size
+        self._board = board
         self._verbose = verbose
-        self._board, self._score, self._valid, self._value, self._winner = [None] * 5
+        self._score, self._valid, self._value, self._winner = [None] * 4
         self.reset()
 
     @property
@@ -23,7 +18,7 @@ class GridGame(object):
 
     def end_game(self):
         self._winner = self._players[np.sign(self._score[-1]) + 1]
-        score = [np.count_nonzero(self._board == 1)]
+        score = [self._board.player_score(1)]
         score += [score[0] - self._score[-1]]
 
         if self._verbose:
@@ -46,15 +41,15 @@ class GridGame(object):
             raise ValueError('Invalid move')
 
         for piece in self._valid[move]:
-            self._board[piece] = self._value
+            self._board.place_piece(piece, self._value)
 
-        self._score.append(self._board.sum())
+        self._score.append(self._board.score())
         self.next_turn()
         return self
 
     def next_turn(self):
         self._value *= -1
-        self._valid = self.valid_moves()
+        self._valid = self._board.valid_moves()
 
     def play(self):
         while not self.is_over():
@@ -70,9 +65,9 @@ class GridGame(object):
 
     def reset(self):
         self._value = 1
-        self._board = self.starting_board()
+        self._board.reset()
         self._score = [0]
-        self._valid = self.valid_moves()
+        self._valid = self._board.valid_moves()
         self._winner = None
 
     @property
@@ -80,20 +75,8 @@ class GridGame(object):
         return self._score
 
     @property
-    def size(self):
-        return self._size
-
-    @abc.abstractmethod
-    def starting_board(self):
-        """Return the starting board configuration as a 2D NumPy array."""
-
-    @property
     def valid(self):
         return self._valid
-
-    @abc.abstractmethod
-    def valid_moves(self):
-        """Return a dictionary that maps valid moves to the pieces gained by the current player."""
 
     @property
     def value(self):
@@ -108,8 +91,8 @@ class Othello(GridGame):
 
     DIRECTIONS = [np.array([i, j]) for i in [-1, 0, 1] for j in [-1, 0, 1] if (i != 0 or j != 0)]
 
-    def __init__(self, player1, player2, size=8, verbose=False):
-        super().__init__(player1, player2, size, verbose)
+    def __init__(self, player1, player2, board, verbose=False):
+        super().__init__(player1, player2, board, verbose)
 
     def is_over(self):
         if len(self._valid) == 0:
@@ -128,29 +111,3 @@ class Othello(GridGame):
                 print(self.player, 'has valid moves')
 
         return super().is_over()
-
-    def starting_board(self):
-        board = np.zeros((self._size, self._size), dtype=np.int8)
-        board[int(self._size / 2), int(self._size / 2 - 1)] = self._value
-        board[int(self._size / 2 - 1), int(self._size / 2)] = self._value
-        board[int(self._size / 2), int(self._size / 2)] = -self._value
-        board[int(self._size / 2 - 1), int(self._size / 2 - 1)] = -self._value
-        return board
-
-    def valid_moves(self):
-        valid = defaultdict(set)
-
-        for point in zip(*np.where(self._board == self._value)):
-            for direction in Othello.DIRECTIONS:
-                line = self._board[tuple([x if d == 0 else slice(x, None, d) for x, d in zip(point, direction)])]
-
-                if len(line.shape) == 2:
-                    line = line.diagonal()
-
-                n = np.argmax(line == 0)
-
-                if np.all(line[1:n] == -self._value) and n > 1:
-                    (rows, cols) = [[x]*n if d == 0 else range(x+d, x + d*(n+1), d) for x, d in zip(point, direction)]
-                    valid[tuple(point + n*direction)].update((r, c) for r, c in zip(rows, cols))
-
-        return valid
