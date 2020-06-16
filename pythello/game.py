@@ -49,7 +49,7 @@ class GridGame(object):
 
     def next_turn(self):
         self._value *= -1
-        self._valid = self._board.valid_moves()
+        self._valid = self._board.valid_moves(self._value)
 
     def play(self):
         while not self.is_over():
@@ -67,7 +67,7 @@ class GridGame(object):
         self._value = 1
         self._board.reset()
         self._score = [0]
-        self._valid = self._board.valid_moves()
+        self._valid = self._board.valid_moves(self._value)
         self._winner = None
 
     @property
