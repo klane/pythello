@@ -11,6 +11,9 @@ class GridBoard(Board):
         super().__init__(size)
         self._board = np.zeros((self._size, self._size), dtype=np.int8)
 
+    def get_pieces(self, player):
+        return np.nonzero(self._board == player)
+
     def place_piece(self, piece, player):
         self._board[piece] = player
 

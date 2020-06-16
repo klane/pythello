@@ -9,6 +9,10 @@ class Board(ABC):
         self._size = size
 
     @abstractmethod
+    def get_pieces(self, player):
+        """Get all pieces on the board for the specified player."""
+
+    @abstractmethod
     def place_piece(self, piece, player):
         """Place a piece on the board for the specified player."""
 
