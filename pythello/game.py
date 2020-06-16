@@ -142,7 +142,7 @@ class Othello(GridGame):
 
         for point in zip(*np.where(self._board == self._value)):
             for direction in Othello.DIRECTIONS:
-                line = self._board[[x if d == 0 else slice(x, None, d) for x, d in zip(point, direction)]]
+                line = self._board[tuple([x if d == 0 else slice(x, None, d) for x, d in zip(point, direction)])]
 
                 if len(line.shape) == 2:
                     line = line.diagonal()
