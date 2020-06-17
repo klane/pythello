@@ -15,7 +15,6 @@ GRID_COLOR = pg.Color('black')
 class App:
     def __init__(self, game, size):
         self.game = game
-        self.size = size, size
         self.grid_size = int(size // game.board.size)
         self.radius = int(self.grid_size // 2.5)
         self.move_radius = self.grid_size // 8
@@ -27,8 +26,9 @@ class App:
         self.time_since_turn = 0
         self.ai_delay = 200
 
-        self.screen = pg.display.set_mode(self.size)
-        self.board = pg.Surface(self.size)
+        screen_size = size, size
+        self.screen = pg.display.set_mode(screen_size)
+        self.board = pg.Surface(screen_size)
 
         line_width = self.grid_size // 20
         self.draw_board(size, line_width)
