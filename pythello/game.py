@@ -1,6 +1,3 @@
-import numpy as np
-
-
 class GridGame(object):
 
     DRAW = 'Draw'
@@ -17,7 +14,9 @@ class GridGame(object):
         return self._board
 
     def end_game(self):
-        self._winner = self._players[np.sign(self._score[-1]) + 1]
+        score = self._score[-1]
+        sign = bool(score > 0) - bool(score < 0)
+        self._winner = self._players[sign + 1]
         score = [self._board.player_score(1)]
         score += [score[0] - self._score[-1]]
 
