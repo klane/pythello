@@ -38,20 +38,18 @@ class App:
 
     def draw_board(self):
         self.board.fill(BOARD_COLOR)
-        self.draw_grid()
+
+        for r, c in product(range(self.game.board.size-1), range(self.game.board.size-1)):
+            x = (c + 1) * self.grid_size
+            y = (r + 1) * self.grid_size
+            pg.draw.line(self.board, GRID_COLOR, (x, 0), (x, self.size[1]), self.line_width)
+            pg.draw.line(self.board, GRID_COLOR, (0, y), (self.size[0], y), self.line_width)
 
     def draw_circle(self, row, col, radius, color):
         x = col * self.grid_size + self.grid_size // 2
         y = row * self.grid_size + self.grid_size // 2
         gfxdraw.aacircle(self.screen, x, y, radius, color)
         gfxdraw.filled_circle(self.screen, x, y, radius, color)
-
-    def draw_grid(self):
-        for r, c in product(range(self.game.board.size-1), range(self.game.board.size-1)):
-            x = (c + 1) * self.grid_size
-            y = (r + 1) * self.grid_size
-            pg.draw.line(self.board, GRID_COLOR, (x, 0), (x, self.size[1]), self.line_width)
-            pg.draw.line(self.board, GRID_COLOR, (0, y), (self.size[0], y), self.line_width)
 
     def event_loop(self):
         for event in pg.event.get():
