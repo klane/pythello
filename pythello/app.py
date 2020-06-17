@@ -18,6 +18,7 @@ class App:
         self.grid_size = int(size // game.board.size)
         self.radius = int(self.grid_size // 2.5)
         self.move_radius = self.grid_size // 8
+        self.menu_height = 50
 
         self.running = True
         self.paused = True
@@ -26,9 +27,9 @@ class App:
         self.time_since_turn = 0
         self.ai_delay = 200
 
-        screen_size = size, size
+        screen_size = size, size + self.menu_height
         self.screen = pg.display.set_mode(screen_size)
-        self.board = pg.Surface(screen_size)
+        self.board = pg.Surface((size, size))
 
         line_width = self.grid_size // 20
         self.draw_board(size, line_width)
@@ -48,7 +49,7 @@ class App:
 
     def draw_circle(self, row, col, radius, color):
         x = col * self.grid_size + self.grid_size // 2
-        y = row * self.grid_size + self.grid_size // 2
+        y = row * self.grid_size + self.grid_size // 2 + self.menu_height
         gfxdraw.aacircle(self.screen, x, y, radius, color)
         gfxdraw.filled_circle(self.screen, x, y, radius, color)
 
@@ -59,7 +60,7 @@ class App:
             elif event.type == pg.KEYDOWN:
                 self.handle_key(event.key)
             elif event.type == pg.MOUSEBUTTONDOWN:
-                move = event.pos[1] // self.grid_size, event.pos[0] // self.grid_size
+                move = (event.pos[1] - self.menu_height) // self.grid_size, event.pos[0] // self.grid_size
 
                 if move in self.game.valid:
                     self.make_move(move)
@@ -87,7 +88,7 @@ class App:
 
     def render(self):
         pg.display.set_caption(f'{CAPTION}: Turn {self.turn}')
-        self.screen.blit(self.board, (0, 0))
+        self.screen.blit(self.board, (0, self.menu_height))
 
         # draw player 1 pieces
         for row, col in zip(*self.game.board.get_pieces(1)):
