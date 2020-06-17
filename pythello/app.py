@@ -10,7 +10,6 @@ PLAYER2_COLOR = pg.Color('white')
 MOVE_COLOR = pg.Color('green')
 BACKGROUND_COLOR = pg.Color('forestgreen')
 GRID_COLOR = pg.Color('black')
-SHOW_GRID = True
 
 
 class App:
@@ -39,9 +38,7 @@ class App:
 
     def draw_board(self):
         self.background.fill(BACKGROUND_COLOR)
-
-        if SHOW_GRID:
-            self.draw_grid()
+        self.draw_grid()
 
     def draw_circle(self, row, col, radius, color):
         x = col * self.grid_size + self.grid_size // 2
