@@ -88,9 +88,6 @@ class GridGame(object):
 
 
 class Othello(GridGame):
-
-    DIRECTIONS = [np.array([i, j]) for i in [-1, 0, 1] for j in [-1, 0, 1] if (i != 0 or j != 0)]
-
     def __init__(self, player1, player2, board, verbose=False):
         super().__init__(player1, player2, board, verbose)
 
