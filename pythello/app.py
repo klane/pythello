@@ -1,115 +1,132 @@
-import numpy as np
+from itertools import product
+import pygame as pg
+from pygame import gfxdraw
 from pythello.player import AI
-from tkinter import Button, Canvas, Frame
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
-class GUI(Frame):
-    def __init__(self, game, size, margin, colors=('black', 'white'), master=None):
-        color = '#333333'
-        Frame.__init__(self, master, bg=color)
+CAPTION = 'Pythello'
+PLAYER1_COLOR = pg.Color('black')
+PLAYER2_COLOR = pg.Color('white')
+MOVE_COLOR = pg.Color('green')
+BACKGROUND_COLOR = pg.Color('darkgreen')
+GRID_COLOR = pg.Color('black')
+SHOW_GRID = True
+
+
+class App:
+    def __init__(self, game, size):
         self.game = game
-        self.cell_size = (size - 2*margin) / self.game.size
-        self.coordinates = lambda position: self.cell_size * (np.array(position) + 1/2) + margin
-        self.player_move = lambda event: self.move(pause=1000, event=event)
-        self.grid()
-        self.master.title("Pythello")
-        self.colors = colors[::-1]  # Flip color order so that the first color input corresponds to player 1
+        self.size = size, size
+        self.grid_size = int(size // game.board.size)
+        self.line_width = self.grid_size // 20
+        self.radius = int(self.grid_size // 2.5)
+        self.move_radius = self.grid_size // 8
 
-        max_turns = self.game.size**2 - 4
-        figure = Figure(figsize=(size/100, size/100), dpi=100, facecolor=color)
-        axes = figure.add_subplot(111, axisbg=color)
-        self.line = axes.plot(0, 0, 'w-', [0, max_turns], [0, 0], 'w--')[0]
-        axes.grid(True, color='w')
-        axes.set_xlim(0, max_turns)
-        axes.set_ylim(-max_turns, max_turns)
-        [tick.set_color('w') for axis in [axes.xaxis, axes.yaxis] for tick in axis.get_ticklines()]
-        [label.set_color('w') for axis in [axes.xaxis, axes.yaxis] for label in axis.get_ticklabels()]
-        [axes.spines[side].set_color('w') for side in ['top', 'bottom', 'left', 'right']]
+        self.running = True
+        self.paused = True
+        self.game_over = False
+        self.turn = 0
+        self.time_since_turn = 0
+        self.ai_delay = 200
 
-        self.canvas = Canvas(self, width=size, height=size, background=color, highlightthickness=0)
-        self.canvas.create_rectangle(margin, margin, size - margin, size - margin, outline='white')
-        self.canvas.grid(row=0, column=1, rowspan=50)
-        self.figure = FigureCanvasTkAgg(figure, master=self)
-        self.figure.get_tk_widget().grid(row=0, column=2, rowspan=50)
-        self.refresh()
+        self.screen = pg.display.set_mode(self.size)
+        self.background = pg.Surface(self.size)
+        self.draw_board()
 
-        if all([isinstance(player, AI) for player in self.game.players]):
-            self.play_button = Button(self, text='Play', highlightbackground=color, command=self.play)
-            self.move_button = Button(self, text='Move', highlightbackground=color, command=self.move)
-            self.reset_button = Button(self, text='Reset', highlightbackground=color, command=self.reset)
-            self.play_button.grid(row=0, column=0)
-            self.move_button.grid(row=1, column=0)
-            self.reset_button.grid(row=2, column=0)
-            self.running = False
-        else:
-            Button(self, text='Reset', highlightbackground=color, command=self.reset).grid(row=0, column=0)
-            self.running = True
+    @property
+    def ai_turn(self):
+        return isinstance(self.game.player, AI) and not self.game_over
 
-        for i in range(self.game.size):
-            line_shift = self.cell_size * (i+1) + margin
-            self.canvas.create_text(margin-10, line_shift - self.cell_size/2, text=str(i+1), fill='white')
-            self.canvas.create_text(line_shift - self.cell_size/2, margin-10, text=chr(97+i), fill='white')
-            self.canvas.create_line(margin, line_shift, size - margin, line_shift, fill='white')
-            self.canvas.create_line(line_shift, margin, line_shift, size - margin, fill='white')
+    def draw_board(self):
+        self.background.fill(BACKGROUND_COLOR)
 
-    def configure_buttons(self):
-        (state, text, command) = ('disabled', 'Pause', self.pause) if self.running else ('normal', 'Reset', self.reset)
-        self.play_button.config(state=state)
-        self.move_button.config(state=state)
-        self.reset_button.config(text=text, command=command)
+        if SHOW_GRID:
+            self.draw_grid()
 
-    def draw_piece(self, position, radius, color):
-        (y, x) = self.coordinates(position)
-        return self.canvas.create_oval(x-radius, y-radius, x+radius, y+radius, fill=color, tags='circle')
+    def draw_circle(self, row, col, radius, color):
+        x = col * self.grid_size + self.grid_size // 2
+        y = row * self.grid_size + self.grid_size // 2
+        gfxdraw.aacircle(self.screen, x, y, radius, color)
+        gfxdraw.filled_circle(self.screen, x, y, radius, color)
 
-    def move(self, pause=10, event=None):
-        if event is None:
+    def draw_grid(self):
+        for r, c in product(range(self.game.board.size-1), range(self.game.board.size-1)):
+            x = (c + 1) * self.grid_size
+            y = (r + 1) * self.grid_size
+            pg.draw.line(self.background, GRID_COLOR, (x, 0), (x, self.size[1]), self.line_width)
+            pg.draw.line(self.background, GRID_COLOR, (0, y), (self.size[0], y), self.line_width)
+
+    def event_loop(self):
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                self.running = False
+            elif event.type == pg.KEYDOWN:
+                self.handle_key(event.key)
+            elif event.type == pg.MOUSEBUTTONDOWN:
+                move = event.pos[1] // self.grid_size, event.pos[0] // self.grid_size
+
+                if move in self.game.valid:
+                    self.make_move(move)
+
+    def handle_key(self, key):
+        if key is pg.K_SPACE:
+            self.paused = not self.paused
+            self.time_since_turn = 0
+        elif key is pg.K_TAB:
+            self.paused = True
+
+            if self.ai_turn:
+                self.make_move()
+        elif key is pg.K_BACKSPACE:
+            self.reset()
+
+    def make_move(self, move=None):
+        if move is None:
             move = self.game.player.move(self.game)
-        else:
-            move = eval(self.canvas.gettags(event.widget.find_withtag("current"))[-2])
 
         self.game.move(move)
-        is_over = self.game.is_over()
-        self.refresh()
+        self.game_over = self.game.is_over()
+        self.turn += 1
+        self.time_since_turn = 0
 
-        if not is_over and isinstance(self.game.player, AI) and self.running:
-            self.after(pause, self.move)
-        elif is_over:
-            self.reset_button.config(text='Reset', command=self.reset)
+    def render(self):
+        pg.display.set_caption(f'{CAPTION}: Turn {self.turn}')
+        self.screen.blit(self.background, (0, 0))
 
-    def pause(self):
-        self.running = False
-        self.configure_buttons()
+        # draw player 1 pieces
+        for row, col in zip(*self.game.board.get_pieces(1)):
+            self.draw_circle(row, col, self.radius, PLAYER1_COLOR)
 
-    def play(self):
-        self.running = True
-        self.configure_buttons()
-        self.move()
+        # draw player 2 pieces
+        for row, col in zip(*self.game.board.get_pieces(-1)):
+            self.draw_circle(row, col, self.radius, PLAYER2_COLOR)
 
-    def refresh(self):
-        self.line.set_data(range(len(self.game.score)), self.game.score)
-        self.figure.draw()
-        [self.canvas.delete(tag) for tag in ['circle', 'text']]
+        # draw valid moves
+        for row, col in self.game.valid:
+            self.draw_circle(row, col, self.move_radius, MOVE_COLOR)
 
-        for position in zip(*np.nonzero(self.game.board)):
-            color = self.colors[int((self.game.board[position] + 1) / 2)]
-            self.draw_piece(position, (self.cell_size-2) / 2, color)
-
-        if not isinstance(self.game.player, AI):
-            for position in self.game.valid:
-                (y, x) = self.coordinates(position)
-                turned = len(self.game.valid[position]) - 1
-                valid = self.draw_piece(position, self.cell_size / 4, 'green')
-                self.canvas.addtag(str(position), 'withtag', valid)
-                text = self.canvas.create_text(x+1, y+1, text=str(turned), tags=('text', str(position)))
-                [self.canvas.tag_bind(tag, "<Button-1>", self.player_move) for tag in [valid, text]]
+        pg.display.update()
 
     def reset(self):
-        self.running = not all([isinstance(player, AI) for player in self.game.players])
         self.game.reset()
-        self.refresh()
+        self.game_over = False
+        self.turn = 0
+        self.time_since_turn = 0
+        self.draw_board()
 
-        if not self.running:
-            self.configure_buttons()
+    def start(self):
+        clock = pg.time.Clock()
+        tick = 0
+
+        while self.running:
+            self.event_loop()
+            self.update_ai(tick)
+            self.render()
+            tick = clock.tick()
+
+    def update_ai(self, time):
+        if self.ai_turn and not self.paused:
+            if self.time_since_turn > self.ai_delay:
+                self.make_move()
+            else:
+                self.time_since_turn += time
