@@ -17,7 +17,6 @@ class App:
         self.game = game
         self.size = size, size
         self.grid_size = int(size // game.board.size)
-        self.line_width = self.grid_size // 20
         self.radius = int(self.grid_size // 2.5)
         self.move_radius = self.grid_size // 8
 
@@ -30,20 +29,22 @@ class App:
 
         self.screen = pg.display.set_mode(self.size)
         self.board = pg.Surface(self.size)
-        self.draw_board()
+
+        line_width = self.grid_size // 20
+        self.draw_board(size, line_width)
 
     @property
     def ai_turn(self):
         return isinstance(self.game.player, AI) and not self.game_over
 
-    def draw_board(self):
+    def draw_board(self, board_size, line_width):
         self.board.fill(BOARD_COLOR)
 
         for r, c in product(range(self.game.board.size-1), range(self.game.board.size-1)):
             x = (c + 1) * self.grid_size
             y = (r + 1) * self.grid_size
-            pg.draw.line(self.board, GRID_COLOR, (x, 0), (x, self.size[1]), self.line_width)
-            pg.draw.line(self.board, GRID_COLOR, (0, y), (self.size[0], y), self.line_width)
+            pg.draw.line(self.board, GRID_COLOR, (x, 0), (x, board_size), line_width)
+            pg.draw.line(self.board, GRID_COLOR, (0, y), (board_size, y), line_width)
 
     def draw_circle(self, row, col, radius, color):
         x = col * self.grid_size + self.grid_size // 2
