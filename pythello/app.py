@@ -8,7 +8,7 @@ CAPTION = 'Pythello'
 PLAYER1_COLOR = pg.Color('black')
 PLAYER2_COLOR = pg.Color('white')
 MOVE_COLOR = pg.Color('green')
-BACKGROUND_COLOR = pg.Color('forestgreen')
+BOARD_COLOR = pg.Color('forestgreen')
 GRID_COLOR = pg.Color('black')
 
 
@@ -29,7 +29,7 @@ class App:
         self.ai_delay = 200
 
         self.screen = pg.display.set_mode(self.size)
-        self.background = pg.Surface(self.size)
+        self.board = pg.Surface(self.size)
         self.draw_board()
 
     @property
@@ -37,7 +37,7 @@ class App:
         return isinstance(self.game.player, AI) and not self.game_over
 
     def draw_board(self):
-        self.background.fill(BACKGROUND_COLOR)
+        self.board.fill(BOARD_COLOR)
         self.draw_grid()
 
     def draw_circle(self, row, col, radius, color):
@@ -50,8 +50,8 @@ class App:
         for r, c in product(range(self.game.board.size-1), range(self.game.board.size-1)):
             x = (c + 1) * self.grid_size
             y = (r + 1) * self.grid_size
-            pg.draw.line(self.background, GRID_COLOR, (x, 0), (x, self.size[1]), self.line_width)
-            pg.draw.line(self.background, GRID_COLOR, (0, y), (self.size[0], y), self.line_width)
+            pg.draw.line(self.board, GRID_COLOR, (x, 0), (x, self.size[1]), self.line_width)
+            pg.draw.line(self.board, GRID_COLOR, (0, y), (self.size[0], y), self.line_width)
 
     def event_loop(self):
         for event in pg.event.get():
@@ -88,7 +88,7 @@ class App:
 
     def render(self):
         pg.display.set_caption(f'{CAPTION}: Turn {self.turn}')
-        self.screen.blit(self.background, (0, 0))
+        self.screen.blit(self.board, (0, 0))
 
         # draw player 1 pieces
         for row, col in zip(*self.game.board.get_pieces(1)):
