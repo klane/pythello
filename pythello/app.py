@@ -8,7 +8,7 @@ CAPTION = 'Pythello'
 PLAYER1_COLOR = pg.Color('black')
 PLAYER2_COLOR = pg.Color('white')
 MOVE_COLOR = pg.Color('green')
-BACKGROUND_COLOR = pg.Color('darkgreen')
+BACKGROUND_COLOR = pg.Color('forestgreen')
 GRID_COLOR = pg.Color('black')
 SHOW_GRID = True
 
