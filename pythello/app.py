@@ -107,7 +107,6 @@ class App:
         self.game_over = False
         self.turn = 0
         self.time_since_turn = 0
-        self.draw_board()
 
     def start(self):
         clock = pg.time.Clock()
