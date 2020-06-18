@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "d10d189d1e1db3e323ed2e2851e3b4df3bf1588ab8d92cd69157e0cabc8361ca"
+            "sha256": "ebb5bc19ef40d1747770cf6eb4449fd1a43ddf1d676f185867a7be6c18262256"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -132,6 +132,13 @@
             ],
             "index": "pypi",
             "version": "==2.0.0.dev6"
+        },
+        "pygame-gui": {
+            "hashes": [
+                "sha256:e8c4e0e050603a1e4369f66010cd294bd5ef40a7955cf139921bf8d0fe9ec7ea"
+            ],
+            "index": "pypi",
+            "version": "==0.5.6"
         },
         "pyparsing": {
             "hashes": [

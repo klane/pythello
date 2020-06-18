@@ -9,6 +9,7 @@ verify_ssl = true
 numpy = "*"
 matplotlib = "*"
 pygame = "==2.0.0.dev6"
+pygame-gui = "*"
 
 [requires]
 python_version = "3.8"
