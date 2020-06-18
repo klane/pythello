@@ -66,15 +66,15 @@ class App:
                     self.make_move(move)
 
     def handle_key(self, key):
-        if key is pg.K_SPACE:
+        if key == pg.K_SPACE:
             self.paused = not self.paused
             self.time_since_turn = 0
-        elif key is pg.K_TAB:
+        elif key == pg.K_TAB:
             self.paused = True
 
             if self.ai_turn:
                 self.make_move()
-        elif key is pg.K_BACKSPACE:
+        elif key == pg.K_BACKSPACE:
             self.reset()
 
     def make_move(self, move=None):
