@@ -1,3 +1,6 @@
+[tool.black]
+line-length = 88
+
 [tool.isort]
 known_third_party = ["numpy", "pygame", "pygame_gui"]
 line_length = 88
