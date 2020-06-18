@@ -1,5 +1,6 @@
 from itertools import product
 import pygame as pg
+import pygame_gui as pgui
 from pygame import gfxdraw
 from pythello.player import AI
 
@@ -18,7 +19,7 @@ class App:
         self.grid_size = int(size // game.board.size)
         self.radius = int(self.grid_size // 2.5)
         self.move_radius = self.grid_size // 8
-        self.menu_height = 50
+        self.menu_height = 25
 
         self.running = True
         self.paused = True
@@ -30,7 +31,26 @@ class App:
         screen_size = size, size + self.menu_height
         self.screen = pg.display.set_mode(screen_size)
         self.board = pg.Surface((size, size))
+        self.manager = pgui.UIManager(screen_size)
+        self.add_ui()
         self.draw_board()
+
+    def add_ui(self):
+        board_width = self.board.get_width()
+        label_width = 80
+
+        pos = board_width - 2 * self.menu_height - label_width
+        size_down = pg.Rect(pos, 0, self.menu_height, self.menu_height)
+        pgui.elements.UIButton(size_down, '◀', self.manager, object_id='size_down')
+
+        pos = board_width - self.menu_height - label_width
+        size_rect = pg.Rect(pos, 0, label_width, self.menu_height)
+        size_str = f'Size: {self.game.board.size}'
+        self.size_label = pgui.elements.UILabel(size_rect, size_str, self.manager)
+
+        pos = board_width - self.menu_height
+        size_up = pg.Rect(pos, 0, self.menu_height, self.menu_height)
+        pgui.elements.UIButton(size_up, '▶', self.manager, object_id='size_up')
 
     @property
     def ai_turn(self):
@@ -42,6 +62,7 @@ class App:
             self.grid_size = int(self.board.get_width() // size)
             self.radius = int(self.grid_size // 2.5)
             self.move_radius = self.grid_size // 8
+            self.size_label.set_text(f'Size: {size}')
             self.reset()
 
     def draw_board(self):
@@ -67,11 +88,15 @@ class App:
                 self.running = False
             elif event.type == pg.KEYDOWN:
                 self.handle_key(event.key)
+            elif event.type == pg.USEREVENT:
+                self.handle_ui(event)
             elif event.type == pg.MOUSEBUTTONDOWN:
                 move = (event.pos[1] - self.menu_height) // self.grid_size, event.pos[0] // self.grid_size
 
                 if move in self.game.valid:
                     self.make_move(move)
+
+            self.manager.process_events(event)
 
     def handle_key(self, key):
         if key == pg.K_SPACE:
@@ -88,6 +113,13 @@ class App:
             self.change_size(self.game.board.size + 2)
         elif key == pg.K_DOWN:
             self.change_size(self.game.board.size - 2)
+
+    def handle_ui(self, event):
+        if event.user_type == pgui.UI_BUTTON_PRESSED:
+            if event.ui_object_id == 'size_up':
+                self.change_size(self.game.board.size + 2)
+            elif event.ui_object_id == 'size_down':
+                self.change_size(self.game.board.size - 2)
 
     def make_move(self, move=None):
         if move is None:
@@ -114,6 +146,7 @@ class App:
         for row, col in self.game.valid:
             self.draw_circle(row, col, self.move_radius, MOVE_COLOR)
 
+        self.manager.draw_ui(self.screen)
         pg.display.update()
 
     def reset(self):
@@ -129,11 +162,13 @@ class App:
 
         while self.running:
             self.event_loop()
-            self.update_ai(tick)
+            self.update(tick)
             self.render()
             tick = clock.tick()
 
-    def update_ai(self, time):
+    def update(self, time):
+        self.manager.update(time)
+
         if self.ai_turn and not self.paused:
             if self.time_since_turn > self.ai_delay:
                 self.make_move()
