@@ -36,6 +36,14 @@ class App:
     def ai_turn(self):
         return isinstance(self.game.player, AI) and not self.game_over
 
+    def change_size(self, size):
+        if size >= 4:
+            self.game._board = GridBoard(size)
+            self.grid_size = int(self.board.get_width() // size)
+            self.radius = int(self.grid_size // 2.5)
+            self.move_radius = self.grid_size // 8
+            self.reset()
+
     def draw_board(self):
         self.board.fill(BOARD_COLOR)
         width, height = self.board.get_size()
@@ -76,6 +84,10 @@ class App:
                 self.make_move()
         elif key == pg.K_BACKSPACE:
             self.reset()
+        elif key == pg.K_UP:
+            self.change_size(self.game.board.size + 2)
+        elif key == pg.K_DOWN:
+            self.change_size(self.game.board.size - 2)
 
     def make_move(self, move=None):
         if move is None:
@@ -109,6 +121,7 @@ class App:
         self.game_over = False
         self.turn = 0
         self.time_since_turn = 0
+        self.draw_board()
 
     def start(self):
         clock = pg.time.Clock()
