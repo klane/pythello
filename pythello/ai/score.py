@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class EdgeScore(object):
+class EdgeScore:
     def __init__(self, size):
         self.board_score = np.ones((size, size), dtype=np.int8)
         self.board_score[0, :] = 3

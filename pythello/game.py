@@ -1,4 +1,4 @@
-class GridGame(object):
+class GridGame:
 
     DRAW = 'Draw'
 

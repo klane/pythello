@@ -1,13 +1,15 @@
-import numpy as np
 import random
 from collections import defaultdict
 from copy import deepcopy
 from functools import partial
 from multiprocessing import Pool
+
+import numpy as np
+
 from pythello.ai.score import greedy_score
 
 
-class Negamax(object):
+class Negamax:
     def __init__(self, depth=4, score=greedy_score, processes=4):
         self.depth = depth
         self.score = score

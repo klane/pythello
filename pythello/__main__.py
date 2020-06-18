@@ -1,5 +1,7 @@
 import sys
+
 import pygame as pg
+
 from pythello.app import App
 from pythello.pythello import game, size
 

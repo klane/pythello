@@ -1,9 +1,10 @@
 from itertools import product
+
 import pygame as pg
 import pygame_gui as pgui
 from pygame import gfxdraw
-from pythello.player import AI
 
+from pythello.player import AI
 
 CAPTION = 'Pythello'
 PLAYER1_COLOR = pg.Color('black')

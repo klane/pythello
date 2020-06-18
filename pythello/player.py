@@ -1,4 +1,4 @@
-class Player(object):
+class Player:
     def __init__(self, name='Player'):
         self.name = name
 
@@ -6,7 +6,7 @@ class Player(object):
         return self.name
 
 
-class AI(object):
+class AI:
     def __init__(self, strategy, name='AI'):
         self.name = name
         self.strategy = strategy
