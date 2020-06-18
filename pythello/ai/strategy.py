@@ -8,7 +8,7 @@ from pythello.ai.score import greedy_score
 
 
 class Negamax(object):
-    def __init__(self, depth, score=greedy_score, processes=4):
+    def __init__(self, depth=4, score=greedy_score, processes=4):
         self.depth = depth
         self.score = score
         self.processes = processes
