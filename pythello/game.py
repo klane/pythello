@@ -3,7 +3,8 @@ class GridGame:
     DRAW = 'Draw'
 
     def __init__(self, player1, player2, board, verbose=False):
-        self._players = (player2, GridGame.DRAW, player1)  # Player 1 last so a positive net score is a player 1 win
+        # player 1 last so a positive net score is a player 1 win
+        self._players = (player2, GridGame.DRAW, player1)
         self._board = board
         self._verbose = verbose
         self._score, self._valid, self._value, self._winner = [None] * 4
@@ -19,6 +20,7 @@ class GridGame:
         self._winner = self._players[sign + 1]
         score = [self._board.player_score(1)]
         score += [score[0] - self._score[-1]]
+        n_turns = len(self._score) - 1
 
         if self._verbose:
             print('Game over!')
@@ -28,9 +30,9 @@ class GridGame:
         if self._winner is GridGame.DRAW:
             print(self._winner)
         elif self._verbose:
-            print(self._winner, 'in', len(self._score) - 1, 'turns')
+            print(self._winner, 'in', n_turns, 'turns')
         else:
-            print(self._winner, '%d-%d in %d turns' % (max(score), min(score), len(self._score) - 1))
+            print(f'{self._winner} {max(score)}-{min(score)} in {n_turns} turns')
 
     def is_over(self):
         return self._winner is not None

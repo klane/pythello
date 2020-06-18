@@ -28,7 +28,7 @@ elif players == 0:
     games = 100
     results = {player1: 0, player2: 0, GridGame.DRAW: 0}
 
-    for i in range(games):
+    for _ in range(games):
         game.play()
         results[game.winner] += 1
         game.reset()

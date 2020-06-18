@@ -21,7 +21,7 @@ class Negamax:
             return list(game.valid)[np.argmax(scores)]
 
     def negamax_root(self, move, game):
-        return -self.negamax(deepcopy(game).move(move), self.depth-1)
+        return -self.negamax(deepcopy(game).move(move), self.depth - 1)
 
     def negamax(self, game, depth, alpha=-np.inf, beta=np.inf):
         if depth == 0 or len(game.valid) == 0:
@@ -30,7 +30,7 @@ class Negamax:
         best_score = -np.inf
 
         for move in game.valid:
-            score = -self.negamax(deepcopy(game).move(move), depth-1, -beta, -alpha)
+            score = -self.negamax(deepcopy(game).move(move), depth - 1, -beta, -alpha)
             best_score = max(best_score, score)
             alpha = max(alpha, score)
 

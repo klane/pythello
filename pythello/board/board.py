@@ -39,4 +39,4 @@ class Board(ABC):
 
     @abstractmethod
     def valid_moves(self, player):
-        """Return a dictionary mapping valid moves to the pieces gained by the specified player."""
+        """Return a dictionary mapping moves to pieces gained by the given player."""

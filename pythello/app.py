@@ -70,8 +70,9 @@ class App:
         self.board.fill(BOARD_COLOR)
         width, height = self.board.get_size()
         grid_width = self.grid_size // 20
+        grid_iter = range(self.game.board.size - 1)
 
-        for r, c in product(range(self.game.board.size-1), range(self.game.board.size-1)):
+        for r, c in product(grid_iter, grid_iter):
             x = (c + 1) * self.grid_size
             y = (r + 1) * self.grid_size
             pg.draw.line(self.board, GRID_COLOR, (x, 0), (x, height), grid_width)
@@ -92,7 +93,9 @@ class App:
             elif event.type == pg.USEREVENT:
                 self.handle_ui(event)
             elif event.type == pg.MOUSEBUTTONDOWN:
-                move = (event.pos[1] - self.menu_height) // self.grid_size, event.pos[0] // self.grid_size
+                row = (event.pos[1] - self.menu_height) // self.grid_size
+                col = event.pos[0] // self.grid_size
+                move = row, col
 
                 if move in self.game.valid:
                     self.make_move(move)
