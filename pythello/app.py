@@ -4,6 +4,7 @@ import pygame as pg
 import pygame_gui as pgui
 from pygame import gfxdraw
 
+from pythello.board.grid import GridBoard
 from pythello.player import AI
 
 CAPTION = 'Pythello'
