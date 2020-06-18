@@ -50,7 +50,7 @@ class GridBoard(Board):
                 n = np.argmax(line == 0)
 
                 if np.all(line[1:n] == -player) and n > 1:
-                    (rows, cols) = [[x]*n if d == 0 else range(x+d, x + d*(n+1), d) for x, d in zip(point, direction)]
-                    valid[tuple(point + n*direction)].update((r, c) for r, c in zip(rows, cols))
+                    pieces = [tuple(point + i * direction) for i in range(1, n + 1)]
+                    valid[pieces[-1]].update(pieces)
 
         return valid
