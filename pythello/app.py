@@ -35,6 +35,8 @@ class App:
 
         screen_size = size, size + self.menu_height
         self.screen = pg.display.set_mode(screen_size)
+        self.background = pg.Surface((size, self.menu_height))
+        self.background.fill(BACKGROUND_COLOR)
         self.board = pg.Surface((size, size))
         self.graph = pg.Surface((size, self.graph_height))
         self.manager = pgui.UIManager(screen_size)
@@ -168,6 +170,7 @@ class App:
 
     def render(self):
         pg.display.set_caption(f'{CAPTION}: Turn {self.turn}')
+        self.screen.blit(self.background, (0, 0))
         self.screen.blit(self.board, (0, self.menu_height))
 
         if self.show_graph.is_selected:
