@@ -68,6 +68,12 @@ class App:
             show_graph, 'Show Graph', self.manager, object_id='show_graph'
         )
 
+        player1_score = pg.Rect(0, 0, self.menu_height, self.menu_height)
+        self.player1_score = pgui.elements.UILabel(player1_score, '2', self.manager)
+
+        player2_score = pg.Rect(self.menu_height, 0, self.menu_height, self.menu_height)
+        self.player2_score = pgui.elements.UILabel(player2_score, '2', self.manager)
+
     @property
     def ai_turn(self):
         return isinstance(self.game.player, AI) and not self.game_over
@@ -167,6 +173,7 @@ class App:
         self.turn += 1
         self.time_since_turn = 0
         self.update_graph()
+        self.update_score()
 
     def render(self):
         pg.display.set_caption(f'{CAPTION}: Turn {self.turn}')
@@ -199,6 +206,7 @@ class App:
         self.time_since_turn = 0
         self.draw_board()
         self.draw_graph()
+        self.update_score()
 
     def start(self):
         clock = pg.time.Clock()
@@ -230,3 +238,7 @@ class App:
         y2 = h * (-self.game.score[-1] + n) / (2 * n)
 
         pg.draw.line(self.graph, GRAPH_LINE_COLOR, (x1, y1), (x2, y2), 2)
+
+    def update_score(self):
+        self.player1_score.set_text(str(self.game.board.player_score(1)))
+        self.player2_score.set_text(str(self.game.board.player_score(-1)))
