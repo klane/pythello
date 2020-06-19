@@ -13,6 +13,8 @@ PLAYER2_COLOR = pg.Color('white')
 MOVE_COLOR = pg.Color('green')
 BOARD_COLOR = pg.Color('forestgreen')
 GRID_COLOR = pg.Color('black')
+BACKGROUND_COLOR = pg.Color('black')
+GRAPH_LINE_COLOR = pg.Color('white')
 
 
 class App:
@@ -22,6 +24,7 @@ class App:
         self.radius = int(self.grid_size // 2.5)
         self.move_radius = self.grid_size // 8
         self.menu_height = 25
+        self.graph_height = 100
 
         self.running = True
         self.paused = True
@@ -33,13 +36,16 @@ class App:
         screen_size = size, size + self.menu_height
         self.screen = pg.display.set_mode(screen_size)
         self.board = pg.Surface((size, size))
+        self.graph = pg.Surface((size, self.graph_height))
         self.manager = pgui.UIManager(screen_size)
         self.add_ui()
         self.draw_board()
+        self.draw_graph()
 
     def add_ui(self):
         board_width = self.board.get_width()
         label_width = 80
+        button_width = 100
 
         pos = board_width - 2 * self.menu_height - label_width
         size_down = pg.Rect(pos, 0, self.menu_height, self.menu_height)
@@ -53,6 +59,12 @@ class App:
         pos = board_width - self.menu_height
         size_up = pg.Rect(pos, 0, self.menu_height, self.menu_height)
         pgui.elements.UIButton(size_up, '▶', self.manager, object_id='size_up')
+
+        pos = board_width - 2 * self.menu_height - label_width - button_width
+        show_graph = pg.Rect(pos, 0, button_width, self.menu_height)
+        self.show_graph = pgui.elements.UIButton(
+            show_graph, 'Show Graph', self.manager, object_id='show_graph'
+        )
 
     @property
     def ai_turn(self):
@@ -84,6 +96,13 @@ class App:
         y = row * self.grid_size + self.grid_size // 2 + self.menu_height
         gfxdraw.aacircle(self.screen, x, y, radius, color)
         gfxdraw.filled_circle(self.screen, x, y, radius, color)
+
+    def draw_graph(self):
+        self.graph.fill(BACKGROUND_COLOR)
+        h = self.graph_height / 2
+        a = (0, h)
+        b = (self.board.get_width(), h)
+        pg.draw.line(self.graph, GRAPH_LINE_COLOR, a, b, 1)
 
     def event_loop(self):
         for event in pg.event.get():
@@ -125,6 +144,17 @@ class App:
                 self.change_size(self.game.board.size + 2)
             elif event.ui_object_id == 'size_down':
                 self.change_size(self.game.board.size - 2)
+            elif event.ui_object_id == 'show_graph':
+                size = self.board.get_width()
+
+                if self.show_graph.is_selected:
+                    self.show_graph.unselect()
+                    screen_size = size, size + self.menu_height
+                else:
+                    self.show_graph.select()
+                    screen_size = size, size + self.menu_height + self.graph_height
+
+                self.screen = pg.display.set_mode(screen_size)
 
     def make_move(self, move=None):
         if move is None:
@@ -134,10 +164,15 @@ class App:
         self.game_over = self.game.is_over()
         self.turn += 1
         self.time_since_turn = 0
+        self.update_graph()
 
     def render(self):
         pg.display.set_caption(f'{CAPTION}: Turn {self.turn}')
         self.screen.blit(self.board, (0, self.menu_height))
+
+        if self.show_graph.is_selected:
+            height = self.menu_height + self.board.get_height()
+            self.screen.blit(self.graph, (0, height))
 
         # draw player 1 pieces
         for row, col in zip(*self.game.board.get_pieces(1)):
@@ -160,6 +195,7 @@ class App:
         self.turn = 0
         self.time_since_turn = 0
         self.draw_board()
+        self.draw_graph()
 
     def start(self):
         clock = pg.time.Clock()
@@ -179,3 +215,15 @@ class App:
                 self.make_move()
             else:
                 self.time_since_turn += time
+
+    def update_graph(self):
+        n = self.game.board.size ** 2
+        h = self.graph_height
+        w = self.board.get_width()
+
+        x1 = w * (self.turn - 1) / (n - 4)
+        x2 = w * self.turn / (n - 4)
+        y1 = h * (-self.game.score[-2] + n) / (2 * n)
+        y2 = h * (-self.game.score[-1] + n) / (2 * n)
+
+        pg.draw.line(self.graph, GRAPH_LINE_COLOR, (x1, y1), (x2, y2), 2)
