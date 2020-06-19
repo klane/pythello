@@ -7,7 +7,6 @@ verify_ssl = true
 
 [packages]
 numpy = "*"
-matplotlib = "*"
 pygame = "==2.0.0.dev6"
 pygame-gui = "*"
 
