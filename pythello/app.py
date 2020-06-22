@@ -15,6 +15,7 @@ BOARD_COLOR = pg.Color('forestgreen')
 GRID_COLOR = pg.Color('black')
 BACKGROUND_COLOR = pg.Color('black')
 GRAPH_LINE_COLOR = pg.Color('white')
+TEXT_COLOR = pg.Color('black')
 
 
 class App:
@@ -40,6 +41,7 @@ class App:
         self.board = pg.Surface((size, size))
         self.graph = pg.Surface((size, self.graph_height))
         self.manager = pgui.UIManager(screen_size)
+        self.font = pg.font.SysFont(None, 25)
         self.add_ui()
         self.draw_board()
         self.draw_graph()
@@ -66,6 +68,12 @@ class App:
         show_graph = pg.Rect(pos, 0, button_width, self.menu_height)
         self.show_graph = pgui.elements.UIButton(
             show_graph, 'Show Graph', self.manager, object_id='show_graph'
+        )
+
+        pos = board_width - 2 * self.menu_height - label_width - 2 * button_width
+        show_gain = pg.Rect(pos, 0, button_width, self.menu_height)
+        self.show_gain = pgui.elements.UIButton(
+            show_gain, 'Show Gain', self.manager, object_id='show_gain'
         )
 
         player1_score = pg.Rect(0, 0, self.menu_height, self.menu_height)
@@ -163,6 +171,11 @@ class App:
                     screen_size = size, size + self.menu_height + self.graph_height
 
                 self.screen = pg.display.set_mode(screen_size)
+            elif event.ui_object_id == 'show_gain':
+                if self.show_gain.is_selected:
+                    self.show_gain.unselect()
+                else:
+                    self.show_gain.select()
 
     def make_move(self, move=None):
         if move is None:
@@ -195,6 +208,15 @@ class App:
         # draw valid moves
         for row, col in self.game.valid:
             self.draw_circle(row, col, self.move_radius, MOVE_COLOR)
+
+            if self.show_gain.is_selected:
+                pieces_gained = len(self.game.valid[(row, col)])
+                textsurface = self.font.render(str(pieces_gained), True, TEXT_COLOR)
+                x = col * self.grid_size + self.grid_size // 2
+                y = row * self.grid_size + self.grid_size // 2 + self.menu_height
+                x -= textsurface.get_width() / 2 - 1
+                y -= textsurface.get_height() / 2 - 1
+                self.screen.blit(textsurface, (x, y))
 
         self.manager.draw_ui(self.screen)
         pg.display.update()
