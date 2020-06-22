@@ -119,8 +119,7 @@ class App:
         pg.draw.line(self.graph, GRAPH_LINE_COLOR, a, b, 1)
 
     def draw_piece(self, row, col, radius, color):
-        x = col * self.grid_size + self.grid_size // 2
-        y = row * self.grid_size + self.grid_size // 2 + self.menu_height
+        x, y = self.get_grid_coords(row, col)
         self.draw_circle(self.screen, x, y, radius, color)
 
     def event_loop(self):
@@ -140,6 +139,11 @@ class App:
                     self.make_move(move)
 
             self.manager.process_events(event)
+
+    def get_grid_coords(self, row, col):
+        x = col * self.grid_size + self.grid_size // 2
+        y = row * self.grid_size + self.grid_size // 2 + self.menu_height
+        return x, y
 
     def handle_key(self, key):
         if key == pg.K_SPACE:
@@ -215,8 +219,7 @@ class App:
             if self.show_gain.is_selected:
                 pieces_gained = len(self.game.valid[(row, col)])
                 textsurface = self.font.render(str(pieces_gained), True, TEXT_COLOR)
-                x = col * self.grid_size + self.grid_size // 2
-                y = row * self.grid_size + self.grid_size // 2 + self.menu_height
+                x, y = self.get_grid_coords(row, col)
                 x -= textsurface.get_width() / 2 - 1
                 y -= textsurface.get_height() / 2 - 1
                 self.screen.blit(textsurface, (x, y))
