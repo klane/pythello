@@ -39,7 +39,7 @@ class GridGame:
 
     def move(self, move):
         if move not in self._valid:
-            raise ValueError('Invalid move')
+            raise ValueError(f'Invalid move: {move}')
 
         for piece in self._valid[move]:
             self._board.place_piece(piece, self._value)
