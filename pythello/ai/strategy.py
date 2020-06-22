@@ -1,4 +1,5 @@
 import random
+from abc import ABC, abstractmethod
 from collections import defaultdict
 from copy import deepcopy
 from functools import partial
@@ -9,13 +10,19 @@ import numpy as np
 from pythello.ai.score import greedy_score
 
 
-class Negamax:
+class AI(ABC):
+    @abstractmethod
+    def move(self, game):
+        """Get next move."""
+
+
+class Negamax(AI):
     def __init__(self, depth=4, score=greedy_score, processes=4):
         self.depth = depth
         self.score = score
         self.processes = processes
 
-    def __call__(self, game):
+    def move(self, game):
         with Pool(self.processes) as pool:
             scores = pool.map(partial(self.negamax_root, game=game), game.valid)
             return list(game.valid)[np.argmax(scores)]
@@ -40,14 +47,16 @@ class Negamax:
         return best_score
 
 
-def greedy_move(game):
-    num_turned = defaultdict(list)
+class Greedy(AI):
+    def move(self, game):
+        num_turned = defaultdict(list)
 
-    for k, v in game.valid.items():
-        num_turned[len(v)].append(k)
+        for k, v in game.valid.items():
+            num_turned[len(v)].append(k)
 
-    return random.choice(num_turned[max(num_turned.keys())])
+        return random.choice(num_turned[max(num_turned.keys())])
 
 
-def random_move(game):
-    return random.choice(list(game.valid.keys()))
+class Random(AI):
+    def move(self, game):
+        return random.choice(list(game.valid.keys()))
