@@ -107,11 +107,9 @@ class App:
             pg.draw.line(self.board, GRID_COLOR, (x, 0), (x, height), grid_width)
             pg.draw.line(self.board, GRID_COLOR, (0, y), (width, y), grid_width)
 
-    def draw_circle(self, row, col, radius, color):
-        x = col * self.grid_size + self.grid_size // 2
-        y = row * self.grid_size + self.grid_size // 2 + self.menu_height
-        gfxdraw.aacircle(self.screen, x, y, radius, color)
-        gfxdraw.filled_circle(self.screen, x, y, radius, color)
+    def draw_circle(self, surface, x, y, radius, color):
+        gfxdraw.aacircle(surface, x, y, radius, color)
+        gfxdraw.filled_circle(surface, x, y, radius, color)
 
     def draw_graph(self):
         self.graph.fill(BACKGROUND_COLOR)
@@ -119,6 +117,11 @@ class App:
         a = (0, h)
         b = (self.board.get_width(), h)
         pg.draw.line(self.graph, GRAPH_LINE_COLOR, a, b, 1)
+
+    def draw_piece(self, row, col, radius, color):
+        x = col * self.grid_size + self.grid_size // 2
+        y = row * self.grid_size + self.grid_size // 2 + self.menu_height
+        self.draw_circle(self.screen, x, y, radius, color)
 
     def event_loop(self):
         for event in pg.event.get():
@@ -199,15 +202,15 @@ class App:
 
         # draw player 1 pieces
         for row, col in zip(*self.game.board.get_pieces(1)):
-            self.draw_circle(row, col, self.radius, PLAYER1_COLOR)
+            self.draw_piece(row, col, self.radius, PLAYER1_COLOR)
 
         # draw player 2 pieces
         for row, col in zip(*self.game.board.get_pieces(-1)):
-            self.draw_circle(row, col, self.radius, PLAYER2_COLOR)
+            self.draw_piece(row, col, self.radius, PLAYER2_COLOR)
 
         # draw valid moves
         for row, col in self.game.valid:
-            self.draw_circle(row, col, self.move_radius, MOVE_COLOR)
+            self.draw_piece(row, col, self.move_radius, MOVE_COLOR)
 
             if self.show_gain.is_selected:
                 pieces_gained = len(self.game.valid[(row, col)])
@@ -252,14 +255,14 @@ class App:
     def update_graph(self):
         n = self.game.board.size ** 2
         h = self.graph_height
-        w = self.board.get_width()
+        w = self.board.get_width() - self.board.get_width() / (n - 4)
 
-        x1 = w * (self.turn - 1) / (n - 4)
-        x2 = w * self.turn / (n - 4)
-        y1 = h * (-self.game.score[-2] + n) / (2 * n)
+        x = w * self.turn / (n - 4)
+        y1 = h / 2
         y2 = h * (-self.game.score[-1] + n) / (2 * n)
 
-        pg.draw.line(self.graph, GRAPH_LINE_COLOR, (x1, y1), (x2, y2), 2)
+        pg.draw.line(self.graph, GRAPH_LINE_COLOR, (x, y1), (x, y2), 2)
+        self.draw_circle(self.graph, int(round(x)), int(round(y2)), 3, GRAPH_LINE_COLOR)
 
     def update_score(self):
         self.player1_score.set_text(str(self.game.board.player_score(1)))
