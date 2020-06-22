@@ -2,6 +2,7 @@ import random
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from copy import deepcopy
+from enum import Enum
 from functools import partial
 from multiprocessing import Pool
 
@@ -60,3 +61,13 @@ class Greedy(AI):
 class Random(AI):
     def move(self, game):
         return random.choice(list(game.valid.keys()))
+
+
+class Player(Enum):
+    HUMAN = None
+    RANDOM = Random()
+    GREEDY = Greedy()
+    NEGAMAX = Negamax()
+
+    def move(self, game):
+        return self.value.move(game)
