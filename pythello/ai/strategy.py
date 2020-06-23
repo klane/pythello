@@ -6,8 +6,6 @@ from enum import Enum
 from functools import partial
 from multiprocessing import Pool, cpu_count
 
-import numpy as np
-
 from pythello.ai.score import greedy_score
 from pythello.utils.validate import Condition, check
 
@@ -19,6 +17,8 @@ class AI(ABC):
 
 
 class Negamax(AI):
+    INF = float('inf')
+
     @check(
         Condition(lambda depth: depth > 0, 'Depth must be strictly positive'),
         Condition(
@@ -38,16 +38,17 @@ class Negamax(AI):
         else:
             scores = [self.negamax_root(move, game) for move in game.valid]
 
-        return list(game.valid)[np.argmax(scores)]
+        index = random.choice([i for i, s in enumerate(scores) if s == max(scores)])
+        return list(game.valid)[index]
 
     def negamax_root(self, move, game):
         return -self.negamax(deepcopy(game).move(move), self.depth - 1)
 
-    def negamax(self, game, depth, alpha=-np.inf, beta=np.inf):
+    def negamax(self, game, depth, alpha=-INF, beta=INF):
         if depth == 0 or len(game.valid) == 0:
             return self.score(game)
 
-        best_score = -np.inf
+        best_score = -self.INF
 
         for move in game.valid:
             score = -self.negamax(deepcopy(game).move(move), depth - 1, -beta, -alpha)
