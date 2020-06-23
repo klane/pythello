@@ -155,6 +155,14 @@ class App:
         x, y = self.get_grid_coords(row, col)
         self.draw_circle(self.screen, x, y, radius, color)
 
+    def draw_score_gain(self, row, col):
+        pieces_gained = len(self.game.valid[(row, col)])
+        textsurface = self.font.render(str(pieces_gained), True, TEXT_COLOR)
+        x, y = self.get_grid_coords(row, col)
+        x -= textsurface.get_width() / 2 - 1
+        y -= textsurface.get_height() / 2 - 1
+        self.screen.blit(textsurface, (x, y))
+
     def event_loop(self):
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -266,12 +274,7 @@ class App:
             self.draw_piece(row, col, self.move_radius, MOVE_COLOR)
 
             if self.show_gain.is_selected:
-                pieces_gained = len(self.game.valid[(row, col)])
-                textsurface = self.font.render(str(pieces_gained), True, TEXT_COLOR)
-                x, y = self.get_grid_coords(row, col)
-                x -= textsurface.get_width() / 2 - 1
-                y -= textsurface.get_height() / 2 - 1
-                self.screen.blit(textsurface, (x, y))
+                self.draw_score_gain(row, col)
 
         self.manager.draw_ui(self.screen)
         pg.display.update()
