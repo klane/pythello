@@ -4,11 +4,12 @@ from collections import defaultdict
 from copy import deepcopy
 from enum import Enum
 from functools import partial
-from multiprocessing import Pool
+from multiprocessing import Pool, cpu_count
 
 import numpy as np
 
 from pythello.ai.score import greedy_score
+from pythello.utils.validate import Condition, check
 
 
 class AI(ABC):
@@ -18,6 +19,13 @@ class AI(ABC):
 
 
 class Negamax(AI):
+    @check(
+        Condition(lambda depth: depth > 0, 'Depth must be strictly positive'),
+        Condition(
+            lambda processes: 1 <= processes <= cpu_count(),
+            f'Processes must be between 1 and available cores ({cpu_count()})',
+        ),
+    )
     def __init__(self, depth=4, score=greedy_score, processes=4):
         self.depth = depth
         self.score = score
