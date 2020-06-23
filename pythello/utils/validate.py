@@ -17,5 +17,7 @@ def check(*conditions):
                     raise ValueError(c.message)
 
             return f(*args, **kwargs)
+
         return g
+
     return decorate
