@@ -22,6 +22,7 @@ TEXT_COLOR = pg.Color('black')
 class App:
     def __init__(self, game, size):
         self.game = game
+        self.size = size
         self.menu_height = 25
         self.graph_height = 100
 
@@ -45,30 +46,29 @@ class App:
         self.draw_graph()
 
     def add_ui(self):
-        board_width = self.board.get_width()
-        elem_width = (board_width - 4 * self.menu_height) / 5
+        elem_width = (self.size - 4 * self.menu_height) / 5
         player_options = ['HUMAN'] + [player.name for player in Player]
 
-        pos = board_width - 2 * self.menu_height - elem_width
+        pos = self.size - 2 * self.menu_height - elem_width
         size_down = pg.Rect(pos, 0, self.menu_height, self.menu_height)
         pgui.elements.UIButton(size_down, '◀', self.manager, object_id='size_down')
 
-        pos = board_width - self.menu_height - elem_width
+        pos = self.size - self.menu_height - elem_width
         size_rect = pg.Rect(pos, 0, elem_width, self.menu_height)
         size_str = f'Size: {self.game.board.size}'
         self.size_label = pgui.elements.UILabel(size_rect, size_str, self.manager)
 
-        pos = board_width - self.menu_height
+        pos = self.size - self.menu_height
         size_up = pg.Rect(pos, 0, self.menu_height, self.menu_height)
         pgui.elements.UIButton(size_up, '▶', self.manager, object_id='size_up')
 
-        pos = board_width - 2 * self.menu_height - 2 * elem_width
+        pos = self.size - 2 * self.menu_height - 2 * elem_width
         show_graph = pg.Rect(pos, 0, elem_width, self.menu_height)
         self.show_graph = pgui.elements.UIButton(
             show_graph, 'Show Graph', self.manager, object_id='show_graph'
         )
 
-        pos = board_width - 2 * self.menu_height - 3 * elem_width
+        pos = self.size - 2 * self.menu_height - 3 * elem_width
         show_gain = pg.Rect(pos, 0, elem_width, self.menu_height)
         self.show_gain = pgui.elements.UIButton(
             show_gain, 'Show Gain', self.manager, object_id='show_gain'
@@ -131,15 +131,14 @@ class App:
 
     def draw_board(self):
         self.board.fill(BOARD_COLOR)
-        width, height = self.board.get_size()
         grid_width = self.grid_size // 20
         grid_iter = range(self.game.board.size - 1)
 
         for r, c in product(grid_iter, grid_iter):
             x = (c + 1) * self.grid_size
             y = (r + 1) * self.grid_size
-            pg.draw.line(self.board, GRID_COLOR, (x, 0), (x, height), grid_width)
-            pg.draw.line(self.board, GRID_COLOR, (0, y), (width, y), grid_width)
+            pg.draw.line(self.board, GRID_COLOR, (x, 0), (x, self.size), grid_width)
+            pg.draw.line(self.board, GRID_COLOR, (0, y), (self.size, y), grid_width)
 
     def draw_circle(self, surface, x, y, radius, color):
         gfxdraw.aacircle(surface, x, y, radius, color)
@@ -149,7 +148,7 @@ class App:
         self.graph.fill(BACKGROUND_COLOR)
         h = self.graph_height / 2
         a = (0, h)
-        b = (self.board.get_width(), h)
+        b = (self.size, h)
         pg.draw.line(self.graph, GRAPH_LINE_COLOR, a, b, 1)
 
     def draw_piece(self, row, col, radius, color):
@@ -181,7 +180,7 @@ class App:
 
     @property
     def grid_size(self):
-        return int(self.board.get_width() // self.game.board.size)
+        return int(self.size // self.game.board.size)
 
     def handle_key(self, key):
         if key == pg.K_SPACE:
@@ -206,14 +205,15 @@ class App:
             elif event.ui_object_id == 'size_down':
                 self.change_game(size=self.game.board.size - 2)
             elif event.ui_object_id == 'show_graph':
-                size = self.board.get_width()
-
                 if self.show_graph.is_selected:
                     self.show_graph.unselect()
-                    screen_size = size, size + self.menu_height
+                    screen_size = self.size, self.size + self.menu_height
                 else:
                     self.show_graph.select()
-                    screen_size = size, size + self.menu_height + self.graph_height
+                    screen_size = (
+                        self.size,
+                        self.size + self.menu_height + self.graph_height,
+                    )
 
                 self.screen = pg.display.set_mode(screen_size)
             elif event.ui_object_id == 'show_gain':
@@ -251,8 +251,7 @@ class App:
         self.screen.blit(self.board, (0, self.menu_height))
 
         if self.show_graph.is_selected:
-            height = self.menu_height + self.board.get_height()
-            self.screen.blit(self.graph, (0, height))
+            self.screen.blit(self.graph, (0, self.menu_height + self.size))
 
         # draw player 1 pieces
         for row, col in zip(*self.game.board.get_pieces(1)):
@@ -308,7 +307,7 @@ class App:
     def update_graph(self):
         n = self.game.board.size ** 2
         h = self.graph_height
-        w = self.board.get_width() - self.board.get_width() / (n - 4)
+        w = self.size - self.size / (n - 4)
 
         x = w * self.turn / (n - 4)
         y1 = h / 2
