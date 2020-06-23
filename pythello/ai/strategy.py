@@ -24,9 +24,13 @@ class Negamax(AI):
         self.processes = processes
 
     def move(self, game):
-        with Pool(self.processes) as pool:
-            scores = pool.map(partial(self.negamax_root, game=game), game.valid)
-            return list(game.valid)[np.argmax(scores)]
+        if self.processes > 1:
+            with Pool(self.processes) as pool:
+                scores = pool.map(partial(self.negamax_root, game=game), game.valid)
+        else:
+            scores = [self.negamax_root(move, game) for move in game.valid]
+
+        return list(game.valid)[np.argmax(scores)]
 
     def negamax_root(self, move, game):
         return -self.negamax(deepcopy(game).move(move), self.depth - 1)
