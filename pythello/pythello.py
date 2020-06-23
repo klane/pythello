@@ -21,7 +21,7 @@ board = GridBoard(size)
 game = Othello(player1, player2, board, verbose)
 
 if gui:
-    size = 500
+    size = 600
 elif players == 0:
     games = 100
     results = {player1: 0, player2: 0, GridGame.DRAW: 0}
