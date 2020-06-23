@@ -4,8 +4,9 @@ import pygame as pg
 import pygame_gui as pgui
 from pygame import gfxdraw
 
+from pythello.ai.strategy import AI, Player
 from pythello.board.grid import GridBoard
-from pythello.player import AI
+from pythello.game import Othello
 
 CAPTION = 'Pythello'
 PLAYER1_COLOR = pg.Color('black')
@@ -48,15 +49,15 @@ class App:
 
     def add_ui(self):
         board_width = self.board.get_width()
-        label_width = 80
-        button_width = 100
+        elem_width = (board_width - 4 * self.menu_height) / 5
+        player_options = ['HUMAN'] + [player.name for player in Player]
 
-        pos = board_width - 2 * self.menu_height - label_width
+        pos = board_width - 2 * self.menu_height - elem_width
         size_down = pg.Rect(pos, 0, self.menu_height, self.menu_height)
         pgui.elements.UIButton(size_down, '◀', self.manager, object_id='size_down')
 
-        pos = board_width - self.menu_height - label_width
-        size_rect = pg.Rect(pos, 0, label_width, self.menu_height)
+        pos = board_width - self.menu_height - elem_width
+        size_rect = pg.Rect(pos, 0, elem_width, self.menu_height)
         size_str = f'Size: {self.game.board.size}'
         self.size_label = pgui.elements.UILabel(size_rect, size_str, self.manager)
 
@@ -64,23 +65,43 @@ class App:
         size_up = pg.Rect(pos, 0, self.menu_height, self.menu_height)
         pgui.elements.UIButton(size_up, '▶', self.manager, object_id='size_up')
 
-        pos = board_width - 2 * self.menu_height - label_width - button_width
-        show_graph = pg.Rect(pos, 0, button_width, self.menu_height)
+        pos = board_width - 2 * self.menu_height - 2 * elem_width
+        show_graph = pg.Rect(pos, 0, elem_width, self.menu_height)
         self.show_graph = pgui.elements.UIButton(
             show_graph, 'Show Graph', self.manager, object_id='show_graph'
         )
 
-        pos = board_width - 2 * self.menu_height - label_width - 2 * button_width
-        show_gain = pg.Rect(pos, 0, button_width, self.menu_height)
+        pos = board_width - 2 * self.menu_height - 3 * elem_width
+        show_gain = pg.Rect(pos, 0, elem_width, self.menu_height)
         self.show_gain = pgui.elements.UIButton(
             show_gain, 'Show Gain', self.manager, object_id='show_gain'
         )
 
-        player1_score = pg.Rect(0, 0, self.menu_height, self.menu_height)
+        player1_score = pg.Rect(elem_width, 0, self.menu_height, self.menu_height)
         self.player1_score = pgui.elements.UILabel(player1_score, '2', self.manager)
 
-        player2_score = pg.Rect(self.menu_height, 0, self.menu_height, self.menu_height)
+        pos = elem_width + self.menu_height
+        player2_score = pg.Rect(pos, 0, self.menu_height, self.menu_height)
         self.player2_score = pgui.elements.UILabel(player2_score, '2', self.manager)
+
+        player1_select = pg.Rect(0, 0, elem_width, self.menu_height)
+        pgui.elements.UIDropDownMenu(
+            player_options,
+            'Player 1',
+            player1_select,
+            self.manager,
+            object_id='player1',
+        )
+
+        pos = elem_width + 2 * self.menu_height
+        player2_select = pg.Rect(pos, 0, elem_width, self.menu_height)
+        pgui.elements.UIDropDownMenu(
+            player_options,
+            'Player 2',
+            player2_select,
+            self.manager,
+            object_id='player2',
+        )
 
     @property
     def ai_turn(self):
@@ -183,6 +204,18 @@ class App:
                     self.show_gain.unselect()
                 else:
                     self.show_gain.select()
+        elif event.user_type == pgui.UI_DROP_DOWN_MENU_CHANGED:
+            ai_players = {player.name for player in Player}
+            player = Player[event.text] if event.text in ai_players else event.text
+
+            if event.ui_object_id == 'player1':
+                players = player, self.game.players[1]
+            elif event.ui_object_id == 'player2':
+                players = self.game.players[0], player
+
+            self.game = Othello(*players, self.game.board)
+            self.paused = True
+            self.reset()
 
     def make_move(self, move=None):
         if move is None:
