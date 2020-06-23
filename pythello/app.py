@@ -107,13 +107,32 @@ class App:
     def ai_turn(self):
         return isinstance(self.game.player, AI) and not self.game_over
 
-    def change_size(self, size):
-        if size >= 4:
-            self.game._board = GridBoard(size)
-            self.grid_size = int(self.board.get_width() // size)
+    def change_game(self, player1=None, player2=None, size=None):
+        change = False
+
+        if player1 is None:
+            player1 = self.game.players[0]
+        elif player1 != self.game.players[0]:
+            change = True
+
+        if player2 is None:
+            player2 = self.game.players[1]
+        elif player2 != self.game.players[1]:
+            change = True
+
+        if size is None:
+            board = self.game.board
+        elif size != self.game.board.size and size >= 4:
+            board = GridBoard(size)
+            change = True
+
+        if change:
+            self.game = Othello(player1, player2, board)
+            self.grid_size = int(self.board.get_width() // board.size)
             self.radius = int(self.grid_size // 2.5)
             self.move_radius = self.grid_size // 8
-            self.size_label.set_text(f'Size: {size}')
+            self.size_label.set_text(f'Size: {board.size}')
+            self.paused = True
             self.reset()
 
     def draw_board(self):
@@ -185,9 +204,9 @@ class App:
     def handle_ui(self, event):
         if event.user_type == pgui.UI_BUTTON_PRESSED:
             if event.ui_object_id == 'size_up':
-                self.change_size(self.game.board.size + 2)
+                self.change_game(size=self.game.board.size + 2)
             elif event.ui_object_id == 'size_down':
-                self.change_size(self.game.board.size - 2)
+                self.change_game(size=self.game.board.size - 2)
             elif event.ui_object_id == 'show_graph':
                 size = self.board.get_width()
 
@@ -207,15 +226,7 @@ class App:
         elif event.user_type == pgui.UI_DROP_DOWN_MENU_CHANGED:
             ai_players = {player.name for player in Player}
             player = Player[event.text] if event.text in ai_players else event.text
-
-            if event.ui_object_id == 'player1':
-                players = player, self.game.players[1]
-            elif event.ui_object_id == 'player2':
-                players = self.game.players[0], player
-
-            self.game = Othello(*players, self.game.board)
-            self.paused = True
-            self.reset()
+            self.change_game(**{event.ui_object_id: player})
 
     def make_move(self, move=None):
         if move is None:
