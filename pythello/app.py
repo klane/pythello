@@ -22,9 +22,6 @@ TEXT_COLOR = pg.Color('black')
 class App:
     def __init__(self, game, size):
         self.game = game
-        self.grid_size = int(size // game.board.size)
-        self.radius = int(self.grid_size // 2.5)
-        self.move_radius = self.grid_size // 8
         self.menu_height = 25
         self.graph_height = 100
 
@@ -128,9 +125,6 @@ class App:
 
         if change:
             self.game = Othello(player1, player2, board)
-            self.grid_size = int(self.board.get_width() // board.size)
-            self.radius = int(self.grid_size // 2.5)
-            self.move_radius = self.grid_size // 8
             self.size_label.set_text(f'Size: {board.size}')
             self.paused = True
             self.reset()
@@ -185,6 +179,10 @@ class App:
         y = row * self.grid_size + self.grid_size // 2 + self.menu_height
         return x, y
 
+    @property
+    def grid_size(self):
+        return int(self.board.get_width() // self.game.board.size)
+
     def handle_key(self, key):
         if key == pg.K_SPACE:
             self.paused = not self.paused
@@ -238,6 +236,14 @@ class App:
         self.time_since_turn = 0
         self.update_graph()
         self.update_score()
+
+    @property
+    def move_radius(self):
+        return self.grid_size // 8
+
+    @property
+    def radius(self):
+        return int(self.grid_size // 2.5)
 
     def render(self):
         pg.display.set_caption(f'{CAPTION}: Turn {self.turn}')
