@@ -20,8 +20,8 @@ TEXT_COLOR = pg.Color('black')
 
 
 class App:
-    def __init__(self, game, size):
-        self.game = game
+    def __init__(self, size):
+        self.game = Othello('Player 1', 'Player 2', GridBoard())
         self.size = size
         self.menu_height = 25
         self.graph_height = 100
@@ -84,7 +84,7 @@ class App:
         player1_select = pg.Rect(0, 0, elem_width, self.menu_height)
         pgui.elements.UIDropDownMenu(
             player_options,
-            'Player 1',
+            self.game.players[0],
             player1_select,
             self.manager,
             object_id='player1',
@@ -94,7 +94,7 @@ class App:
         player2_select = pg.Rect(pos, 0, elem_width, self.menu_height)
         pgui.elements.UIDropDownMenu(
             player_options,
-            'Player 2',
+            self.game.players[1],
             player2_select,
             self.manager,
             object_id='player2',
