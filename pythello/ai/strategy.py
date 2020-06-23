@@ -63,11 +63,23 @@ class Random(AI):
         return random.choice(list(game.valid.keys()))
 
 
-class Player(Enum):
-    HUMAN = None
+class PlayerMeta(type(AI), type(Enum)):
+    pass
+
+
+class Player(AI, Enum, metaclass=PlayerMeta):
     RANDOM = Random()
     GREEDY = Greedy()
     NEGAMAX = Negamax()
 
+    def __new__(cls, *args):
+        value = len(cls.__members__) + 1
+        obj = object.__new__(cls)
+        obj._value_ = value
+        return obj
+
+    def __init__(self, ai):
+        self.ai = ai
+
     def move(self, game):
-        return self.value.move(game)
+        return self.ai.move(game)
