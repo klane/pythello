@@ -36,7 +36,13 @@ class GridGame:
     def is_over(self):
         return len(self._valid) == 0
 
-    def move(self, move):
+    def move(self, move=None):
+        if move is None:
+            if isinstance(self.player, AI):
+                move = self.player.move(self)
+            else:
+                raise ValueError('Must provide move if current player is not an AI')
+
         if move not in self._valid:
             raise ValueError(f'Invalid move: {move}')
 

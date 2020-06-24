@@ -234,9 +234,6 @@ class App:
             self.change_game(**{event.ui_object_id: player})
 
     def make_move(self, move=None):
-        if move is None:
-            move = self.game.player.move(self.game)
-
         self.game.move(move)
         self.turn += 1
         self.time_since_turn = 0
