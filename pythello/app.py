@@ -101,7 +101,7 @@ class App:
 
     @property
     def ai_turn(self):
-        return isinstance(self.game.player, AI) and not self.game.is_over()
+        return isinstance(self.game.player, AI) and not self.game.is_over
 
     def change_game(self, player1=None, player2=None, size=None):
         change = False

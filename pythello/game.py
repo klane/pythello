@@ -32,6 +32,7 @@ class GridGame:
         else:
             print(f'{self.winner} {max(score)}-{min(score)} in {n_turns} turns')
 
+    @property
     def is_over(self):
         return len(self._valid) == 0
 
@@ -78,7 +79,7 @@ class GridGame:
 
     @property
     def winner(self):
-        if not self.is_over():
+        if not self.is_over:
             return None
 
         score = self._score[-1]
