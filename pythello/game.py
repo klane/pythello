@@ -1,3 +1,6 @@
+from pythello.ai.strategy import AI
+
+
 class GridGame:
 
     DRAW = 'Draw'
