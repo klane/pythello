@@ -97,9 +97,6 @@ class GridGame:
 
 
 class Othello(GridGame):
-    def __init__(self, player1, player2, board, verbose=False):
-        super().__init__(player1, player2, board, verbose)
-
     def next_turn(self):
         super().next_turn()
 
