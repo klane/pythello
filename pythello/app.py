@@ -257,11 +257,11 @@ class App:
             self.screen.blit(self.graph, (0, self.menu_height + self.size))
 
         # draw player 1 pieces
-        for row, col in zip(*self.game.board.get_pieces(1)):
+        for row, col in self.game.board.get_pieces(1):
             self.draw_piece(row, col, self.radius, PLAYER1_COLOR)
 
         # draw player 2 pieces
-        for row, col in zip(*self.game.board.get_pieces(-1)):
+        for row, col in self.game.board.get_pieces(-1):
             self.draw_piece(row, col, self.radius, PLAYER2_COLOR)
 
         # draw valid moves

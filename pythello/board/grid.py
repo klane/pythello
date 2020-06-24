@@ -16,7 +16,8 @@ class GridBoard(Board):
         self.reset()
 
     def get_pieces(self, player):
-        return np.nonzero(self._board == player)
+        pieces = np.nonzero(self._board == player)
+        return {(row, col) for row, col in zip(*pieces)}
 
     @property
     def num_empty(self):
