@@ -13,6 +13,7 @@ class GridBoard(Board):
     def __init__(self, size=8):
         super().__init__(size)
         self._board = np.zeros((self._size, self._size), dtype=np.int8)
+        self.reset()
 
     def get_pieces(self, player):
         return np.nonzero(self._board == player)
