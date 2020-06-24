@@ -28,7 +28,6 @@ class App:
 
         self.running = True
         self.paused = True
-        self.game_over = False
         self.turn = 0
         self.time_since_turn = 0
         self.ai_delay = 200
@@ -102,7 +101,7 @@ class App:
 
     @property
     def ai_turn(self):
-        return isinstance(self.game.player, AI) and not self.game_over
+        return isinstance(self.game.player, AI) and not self.game.is_over()
 
     def change_game(self, player1=None, player2=None, size=None):
         change = False
@@ -239,7 +238,6 @@ class App:
             move = self.game.player.move(self.game)
 
         self.game.move(move)
-        self.game_over = self.game.is_over()
         self.turn += 1
         self.time_since_turn = 0
         self.update_graph()
@@ -281,7 +279,6 @@ class App:
 
     def reset(self):
         self.game.reset()
-        self.game_over = False
         self.turn = 0
         self.time_since_turn = 0
         self.draw_board()
