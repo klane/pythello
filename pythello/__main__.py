@@ -28,7 +28,9 @@ if __name__ == '__main__':
         results = {player1: 0, player2: 0, GridGame.DRAW: 0}
 
         for _ in range(games):
-            game.play()
+            while not game.is_over():
+                game.move(game.player.move(game))
+
             results[game.winner] += 1
             game.reset()
 

@@ -52,10 +52,6 @@ class GridGame:
         self._value *= -1
         self._valid = self._board.valid_moves(self._value)
 
-    def play(self):
-        while not self.is_over():
-            self.move(self.player.move(self))
-
     @property
     def player(self):
         return self._players[self._value + 1]
