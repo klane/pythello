@@ -1,8 +1,8 @@
 import random
-from abc import ABC, abstractmethod
+from abc import ABC, ABCMeta, abstractmethod
 from collections import defaultdict
 from copy import deepcopy
-from enum import Enum
+from enum import Enum, EnumMeta
 from functools import partial
 from multiprocessing import Pool, cpu_count
 
@@ -76,7 +76,7 @@ class Random(AI):
         return random.choice(list(game.valid.keys()))
 
 
-class PlayerMeta(type(AI), type(Enum)):
+class PlayerMeta(ABCMeta, EnumMeta):
     pass
 
 
