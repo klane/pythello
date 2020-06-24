@@ -202,9 +202,9 @@ class App:
         elif key == pg.K_BACKSPACE:
             self.reset()
         elif key == pg.K_UP:
-            self.change_size(self.game.board.size + 2)
+            self.change_game(size=self.game.board.size + 2)
         elif key == pg.K_DOWN:
-            self.change_size(self.game.board.size - 2)
+            self.change_game(size=self.game.board.size - 2)
 
     def handle_ui(self, event):
         if event.user_type == pgui.UI_BUTTON_PRESSED:
