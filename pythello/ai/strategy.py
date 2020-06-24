@@ -76,7 +76,7 @@ class Random(AI):
         return random.choice(list(game.valid.keys()))
 
 
-class PlayerMeta(ABCMeta, EnumMeta):
+class PlayerMeta(EnumMeta, ABCMeta):
     pass
 
 
