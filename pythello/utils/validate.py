@@ -12,7 +12,7 @@ class Condition(NamedTuple):
     message: str
 
 
-def check(*conditions: Condition) -> Function:
+def check(*conditions: Condition) -> Callable[[Function], Function]:
     def decorate(f: Function) -> Function:
         def g(*args: Any, **kwargs: Any) -> Any:
             fargs = inspect.getcallargs(f, *args, **kwargs)
