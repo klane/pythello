@@ -1,11 +1,21 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, List, Optional, Tuple
+
 from pythello.ai.strategy import AI
+
+if TYPE_CHECKING:
+    from pythello.board.board import Board
+    from pythello.utils.typing import Move, Player, ValidMoves
 
 
 class GridGame:
 
     DRAW = 'Draw'
 
-    def __init__(self, player1, player2, board, verbose=False):
+    def __init__(
+        self, player1: Player, player2: Player, board: Board, verbose: bool = False
+    ):
         # player 1 last so a positive net score is a player 1 win
         self._players = (player2, GridGame.DRAW, player1)
         self._board = board
@@ -15,10 +25,10 @@ class GridGame:
         self._score = [0]
 
     @property
-    def board(self):
+    def board(self) -> Board:
         return self._board
 
-    def end_game(self):
+    def end_game(self) -> None:
         score = [self._board.player_score(1)]
         score += [score[0] - self._score[-1]]
         n_turns = len(self._score) - 1
@@ -36,10 +46,10 @@ class GridGame:
             print(f'{self.winner} {max(score)}-{min(score)} in {n_turns} turns')
 
     @property
-    def is_over(self):
+    def is_over(self) -> bool:
         return len(self._valid) == 0
 
-    def move(self, move=None):
+    def move(self, move: Optional[Move] = None) -> GridGame:
         if move is None:
             if isinstance(self.player, AI):
                 move = self.player.move(self)
@@ -56,38 +66,38 @@ class GridGame:
         self.next_turn()
         return self
 
-    def next_turn(self):
+    def next_turn(self) -> None:
         self._value *= -1
         self._valid = self._board.valid_moves(self._value)
 
     @property
-    def player(self):
+    def player(self) -> Player:
         return self._players[self._value + 1]
 
     @property
-    def players(self):
+    def players(self) -> Tuple[Player, Player]:
         return self._players[2], self._players[0]
 
-    def reset(self):
+    def reset(self) -> None:
         self._value = 1
         self._board.reset()
         self._score = [0]
         self._valid = self._board.valid_moves(self._value)
 
     @property
-    def score(self):
+    def score(self) -> List[int]:
         return self._score
 
     @property
-    def valid(self):
+    def valid(self) -> ValidMoves:
         return self._valid
 
     @property
-    def value(self):
+    def value(self) -> int:
         return self._value
 
     @property
-    def winner(self):
+    def winner(self) -> Optional[Player]:
         if not self.is_over:
             return None
 
@@ -97,7 +107,7 @@ class GridGame:
 
 
 class Othello(GridGame):
-    def next_turn(self):
+    def next_turn(self) -> None:
         super().next_turn()
 
         if len(self._valid) == 0:

@@ -1,12 +1,18 @@
+from __future__ import annotations
+
 import inspect
 from collections import namedtuple
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from pythello.utils.typing import Function
 
 Condition = namedtuple('Condition', ['check', 'message'])
 
 
-def check(*conditions):
-    def decorate(f):
-        def g(*args, **kwargs):
+def check(*conditions: Condition) -> Function:
+    def decorate(f: Function) -> Function:
+        def g(*args: Any, **kwargs: Any) -> Any:
             fargs = inspect.getcallargs(f, *args, **kwargs)
 
             for c in conditions:

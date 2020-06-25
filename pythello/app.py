@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from itertools import product
+from typing import TYPE_CHECKING, Optional, Tuple
 
 import pygame as pg
 import pygame_gui as pgui
@@ -7,6 +10,9 @@ from pygame import gfxdraw
 from pythello.ai.strategy import AI, Player
 from pythello.board.grid import GridBoard
 from pythello.game import Othello
+
+if TYPE_CHECKING:
+    from pythello.utils.typing import Move, Player as PlayerType
 
 CAPTION = 'Pythello'
 PLAYER1_COLOR = pg.Color('black')
@@ -20,7 +26,7 @@ TEXT_COLOR = pg.Color('black')
 
 
 class App:
-    def __init__(self, size):
+    def __init__(self, size: int):
         self.game = Othello('Player 1', 'Player 2', GridBoard())
         self.size = size
         self.menu_height = 25
@@ -44,7 +50,7 @@ class App:
         self.draw_board()
         self.draw_graph()
 
-    def add_ui(self):
+    def add_ui(self) -> None:
         elem_width = (self.size - 4 * self.menu_height) / 5
         player_options = ['HUMAN'] + [player.name for player in Player]
 
@@ -100,10 +106,15 @@ class App:
         )
 
     @property
-    def ai_turn(self):
+    def ai_turn(self) -> bool:
         return isinstance(self.game.player, AI) and not self.game.is_over
 
-    def change_game(self, player1=None, player2=None, size=None):
+    def change_game(
+        self,
+        player1: Optional[PlayerType] = None,
+        player2: Optional[PlayerType] = None,
+        size: Optional[int] = None,
+    ) -> None:
         change = False
 
         if player1 is None:
@@ -128,7 +139,7 @@ class App:
             self.paused = True
             self.reset()
 
-    def draw_board(self):
+    def draw_board(self) -> None:
         self.board.fill(BOARD_COLOR)
         grid_width = self.grid_size // 20
         grid_iter = range(self.game.board.size - 1)
@@ -139,22 +150,24 @@ class App:
             pg.draw.line(self.board, GRID_COLOR, (x, 0), (x, self.size), grid_width)
             pg.draw.line(self.board, GRID_COLOR, (0, y), (self.size, y), grid_width)
 
-    def draw_circle(self, surface, x, y, radius, color):
+    def draw_circle(
+        self, surface: pg.Surface, x: int, y: int, radius: int, color: pg.Color
+    ) -> None:
         gfxdraw.aacircle(surface, x, y, radius, color)
         gfxdraw.filled_circle(surface, x, y, radius, color)
 
-    def draw_graph(self):
+    def draw_graph(self) -> None:
         self.graph.fill(BACKGROUND_COLOR)
         h = self.graph_height / 2
         a = (0, h)
         b = (self.size, h)
         pg.draw.line(self.graph, GRAPH_LINE_COLOR, a, b, 1)
 
-    def draw_piece(self, row, col, radius, color):
+    def draw_piece(self, row: int, col: int, radius: int, color: pg.Color) -> None:
         x, y = self.get_grid_coords(row, col)
         self.draw_circle(self.screen, x, y, radius, color)
 
-    def draw_score_gain(self, row, col):
+    def draw_score_gain(self, row: int, col: int) -> None:
         pieces_gained = len(self.game.valid[(row, col)])
         textsurface = self.font.render(str(pieces_gained), True, TEXT_COLOR)
         x, y = self.get_grid_coords(row, col)
@@ -162,7 +175,7 @@ class App:
         y -= textsurface.get_height() / 2 - 1
         self.screen.blit(textsurface, (x, y))
 
-    def event_loop(self):
+    def event_loop(self) -> None:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 self.running = False
@@ -180,16 +193,16 @@ class App:
 
             self.manager.process_events(event)
 
-    def get_grid_coords(self, row, col):
+    def get_grid_coords(self, row: int, col: int) -> Tuple[int, int]:
         x = col * self.grid_size + self.grid_size // 2
         y = row * self.grid_size + self.grid_size // 2 + self.menu_height
         return x, y
 
     @property
-    def grid_size(self):
+    def grid_size(self) -> int:
         return int(self.size // self.game.board.size)
 
-    def handle_key(self, key):
+    def handle_key(self, key: int) -> None:
         if key == pg.K_SPACE:
             self.paused = not self.paused
             self.time_since_turn = 0
@@ -205,7 +218,7 @@ class App:
         elif key == pg.K_DOWN:
             self.change_game(size=self.game.board.size - 2)
 
-    def handle_ui(self, event):
+    def handle_ui(self, event: pg.event.Event) -> None:
         if event.user_type == pgui.UI_BUTTON_PRESSED:
             if event.ui_object_id == 'size_up':
                 self.change_game(size=self.game.board.size + 2)
@@ -233,7 +246,7 @@ class App:
             player = Player[event.text] if event.text in ai_players else event.text
             self.change_game(**{event.ui_object_id: player})
 
-    def make_move(self, move=None):
+    def make_move(self, move: Optional[Move] = None) -> None:
         self.game.move(move)
         self.turn += 1
         self.time_since_turn = 0
@@ -241,14 +254,14 @@ class App:
         self.update_score()
 
     @property
-    def move_radius(self):
+    def move_radius(self) -> int:
         return self.grid_size // 8
 
     @property
-    def radius(self):
+    def radius(self) -> int:
         return int(self.grid_size // 2.5)
 
-    def render(self):
+    def render(self) -> None:
         pg.display.set_caption(f'{CAPTION}: Turn {self.turn}')
         self.screen.blit(self.background, (0, 0))
         self.screen.blit(self.board, (0, self.menu_height))
@@ -274,7 +287,7 @@ class App:
         self.manager.draw_ui(self.screen)
         pg.display.update()
 
-    def reset(self):
+    def reset(self) -> None:
         self.game.reset()
         self.turn = 0
         self.time_since_turn = 0
@@ -282,7 +295,7 @@ class App:
         self.draw_graph()
         self.update_score()
 
-    def start(self):
+    def start(self) -> None:
         clock = pg.time.Clock()
         tick = 0
 
@@ -292,7 +305,7 @@ class App:
             self.render()
             tick = clock.tick()
 
-    def update(self, time):
+    def update(self, time: int) -> None:
         self.manager.update(time)
 
         if self.ai_turn and not self.paused:
@@ -301,7 +314,7 @@ class App:
             else:
                 self.time_since_turn += time
 
-    def update_graph(self):
+    def update_graph(self) -> None:
         n = self.game.board.size ** 2
         h = self.graph_height
         w = self.size - self.size / (n - 4)
@@ -313,6 +326,6 @@ class App:
         pg.draw.line(self.graph, GRAPH_LINE_COLOR, (x, y1), (x, y2), 2)
         self.draw_circle(self.graph, int(round(x)), int(round(y2)), 3, GRAPH_LINE_COLOR)
 
-    def update_score(self):
+    def update_score(self) -> None:
         self.player1_score.set_text(str(self.game.board.player_score(1)))
         self.player2_score.set_text(str(self.game.board.player_score(-1)))
