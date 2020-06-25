@@ -1,11 +1,18 @@
+from __future__ import annotations
+
 import sys
+from collections import defaultdict
+from typing import TYPE_CHECKING, Dict, Optional
 
 import pygame as pg
 
 from pythello.ai.strategy import Player
 from pythello.app import App
 from pythello.board.grid import GridBoard
-from pythello.game import DRAW, Othello
+from pythello.game import Othello
+
+if TYPE_CHECKING:
+    from pythello.utils.typing import Player as PlayerType
 
 app = True
 app_size = 600
@@ -25,7 +32,7 @@ if __name__ == '__main__':
     else:
         board = GridBoard(game_size)
         game = Othello(player1, player2, board, verbose)
-        results = {player1: 0, player2: 0, DRAW: 0}
+        results: Dict[Optional[PlayerType], int] = defaultdict(int)
 
         for _ in range(games):
             while not game.is_over:
@@ -34,4 +41,4 @@ if __name__ == '__main__':
             results[game.winner] += 1
             game.reset()
 
-        print(results)
+        print({k: v for k, v in sorted(results.items(), key=lambda item: -item[1])})
