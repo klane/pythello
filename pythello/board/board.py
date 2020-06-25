@@ -3,15 +3,17 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Set, Union
 
+from pythello.utils.validate import Condition, check
+
 if TYPE_CHECKING:
-    from pythello.utils.typing import Move, ValidMoves
+    from pythello.utils.typing import IntPredicate, Move, ValidMoves
 
 
 class Board(ABC):
-    def __init__(self, size: int):
-        if size % 2 != 0 or size <= 0:
-            raise ValueError('Enter a positive even integer board dimension')
+    SIZE_POSITIVE_EVEN: IntPredicate = lambda size: size > 0 and size % 2 == 0
 
+    @check(Condition(SIZE_POSITIVE_EVEN, 'Board size must be a positive even integer'))
+    def __init__(self, size: int):
         self._size = size
 
     @abstractmethod
