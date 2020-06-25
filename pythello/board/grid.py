@@ -10,13 +10,17 @@ class GridBoard(Board):
     DIRECTIONS = [(i, j) for i in [-1, 0, 1] for j in [-1, 0, 1] if (i != 0 or j != 0)]
     DIRECTIONS = [np.array([i, j]) for i, j in DIRECTIONS]
 
-    def __init__(self, size=8):
+    def __init__(self, size=8, board=None):
         super().__init__(size)
-        self._board = np.zeros((self._size, self._size), dtype=np.int8)
-        self.reset()
+
+        if board is None:
+            self._board = np.zeros((self._size, self._size), dtype=np.int8)
+            self.reset()
+        else:
+            self._board = board
 
     def __mul__(self, other):
-        return self._board * other
+        return GridBoard(board=self._board * other)
 
     def get_pieces(self, player):
         pieces = np.nonzero(self._board == player)
