@@ -15,6 +15,9 @@ class GridBoard(Board):
         self._board = np.zeros((self._size, self._size), dtype=np.int8)
         self.reset()
 
+    def __mul__(self, other):
+        return self._board * other
+
     def get_pieces(self, player):
         pieces = np.nonzero(self._board == player)
         return {(row, col) for row, col in zip(*pieces)}

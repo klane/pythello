@@ -9,6 +9,10 @@ class Board(ABC):
         self._size = size
 
     @abstractmethod
+    def __mul__(self, other):
+        """Multiply board by another board or a constant"""
+
+    @abstractmethod
     def get_pieces(self, player):
         """Get all pieces on the board for the specified player."""
 
