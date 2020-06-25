@@ -23,7 +23,7 @@ class GridBoard(Board):
             self._board = np.zeros((self._size, self._size), dtype=np.int8)
             self.reset()
         else:
-            self._board = board
+            self._board = board.copy()
 
     def __mul__(self, other: Union[Board, int]) -> Board:
         return GridBoard(board=self._board * other)
