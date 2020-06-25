@@ -17,7 +17,7 @@ class GridBoard(Board):
     DIRECTIONS = [np.array([i, j]) for i, j in DIRECTIONS]
 
     def __init__(self, size: int = 8, board: Optional[np.ndarray] = None):
-        super().__init__(size)
+        super().__init__(size if board is None else board.shape[0])
 
         if board is None:
             self._board = np.zeros((self._size, self._size), dtype=np.int8)
