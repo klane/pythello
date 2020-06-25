@@ -8,16 +8,15 @@ if TYPE_CHECKING:
     from pythello.board.board import Board
     from pythello.utils.typing import Move, Player, ValidMoves
 
+DRAW = 'Draw'
+
 
 class GridGame:
-
-    DRAW = 'Draw'
-
     def __init__(
         self, player1: Player, player2: Player, board: Board, verbose: bool = False
     ):
         # player 1 last so a positive net score is a player 1 win
-        self._players = (player2, GridGame.DRAW, player1)
+        self._players = (player2, DRAW, player1)
         self._board = board
         self._verbose = verbose
         self._value = 1
@@ -38,7 +37,7 @@ class GridGame:
             print(self._players[2], 'score:', score[0])
             print(self._players[0], 'score:', score[1])
 
-        if self.winner is GridGame.DRAW:
+        if self.winner is DRAW:
             print(self.winner)
         elif self._verbose:
             print(self.winner, 'in', n_turns, 'turns')

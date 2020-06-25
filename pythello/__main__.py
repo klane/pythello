@@ -5,7 +5,7 @@ import pygame as pg
 from pythello.ai.strategy import Player
 from pythello.app import App
 from pythello.board.grid import GridBoard
-from pythello.game import GridGame, Othello
+from pythello.game import DRAW, Othello
 
 app = True
 app_size = 600
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     else:
         board = GridBoard(game_size)
         game = Othello(player1, player2, board, verbose)
-        results = {player1: 0, player2: 0, GridGame.DRAW: 0}
+        results = {player1: 0, player2: 0, DRAW: 0}
 
         for _ in range(games):
             while not game.is_over:
