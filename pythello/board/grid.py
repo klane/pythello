@@ -1,21 +1,27 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import TYPE_CHECKING, Optional, Set, Union
+from typing import TYPE_CHECKING, Callable, Optional, Set, Union
 
 import numpy as np
 
 from pythello.board.board import Board
+from pythello.utils.validate import Condition, check
 
 if TYPE_CHECKING:
     from pythello.utils.typing import Move, ValidMoves
 
+ArrayPredicate = Callable[[Optional[np.ndarray]], bool]
+
 
 class GridBoard(Board):
-
+    BOARD_SQUARE: ArrayPredicate = lambda board: board is None or (
+        len(board.shape) == 2 and board.shape[0] == board.shape[1]
+    )
     DIRECTIONS = [(i, j) for i in [-1, 0, 1] for j in [-1, 0, 1] if (i != 0 or j != 0)]
     DIRECTIONS = [np.array([i, j]) for i, j in DIRECTIONS]
 
+    @check(Condition(BOARD_SQUARE, 'Board must be square'))
     def __init__(self, size: int = 8, board: Optional[np.ndarray] = None):
         super().__init__(size if board is None else board.shape[0])
 
