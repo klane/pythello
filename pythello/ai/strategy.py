@@ -14,7 +14,7 @@ from pythello.utils.validate import Condition, check
 
 if TYPE_CHECKING:
     from pythello.game import GridGame
-    from pythello.utils.typing import Move, Scorer
+    from pythello.utils.typing import IntPredicate, Move, Scorer
 
 
 class AI(ABC):
@@ -25,11 +25,13 @@ class AI(ABC):
 
 class Negamax(AI):
     INF = float('inf')
+    DEPTH_POSITIVE: IntPredicate = lambda depth: depth > 0
+    PROCESSES_IN_RANGE: IntPredicate = lambda processes: 1 <= processes <= cpu_count()
 
     @check(
-        Condition(lambda depth: depth > 0, 'Depth must be strictly positive'),
+        Condition(DEPTH_POSITIVE, 'Depth must be strictly positive'),
         Condition(
-            lambda processes: 1 <= processes <= cpu_count(),
+            PROCESSES_IN_RANGE,
             f'Processes must be between 1 and available cores ({cpu_count()})',
         ),
     )

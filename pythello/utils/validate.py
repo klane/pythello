@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 import inspect
-from collections import namedtuple
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable, NamedTuple
 
 if TYPE_CHECKING:
     from pythello.utils.typing import Function
 
-Condition = namedtuple('Condition', ['check', 'message'])
+
+class Condition(NamedTuple):
+    check: Callable[..., bool]
+    message: str
 
 
 def check(*conditions: Condition) -> Function:
