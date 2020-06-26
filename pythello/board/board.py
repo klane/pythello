@@ -25,6 +25,10 @@ class Board(ABC):
         """Get all pieces on the board for the specified player."""
 
     @property
+    def is_full(self) -> bool:
+        return self.num_empty == 0
+
+    @property
     @abstractmethod
     def num_empty(self) -> int:
         """Return the number of empty spaces on the board."""
