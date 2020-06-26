@@ -51,7 +51,14 @@ class GridGame:
 
     @property
     def is_over(self) -> bool:
-        return len(self._valid) == 0
+        if self._board.is_full:
+            return True
+
+        if not self.has_move:
+            next_player = self._players[self._index ^ 1].value
+            return len(self._board.valid_moves(next_player)) == 0
+
+        return False
 
     def move(self, move: Optional[Move] = None) -> GridGame:
         if move is None:
