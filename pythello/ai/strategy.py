@@ -16,6 +16,8 @@ if TYPE_CHECKING:
     from pythello.game import GridGame
     from pythello.utils.typing import IntPredicate, Move, Scorer
 
+INF = float('inf')
+
 
 class AI(ABC):
     @abstractmethod
@@ -24,7 +26,6 @@ class AI(ABC):
 
 
 class Negamax(AI):
-    INF = float('inf')
     DEPTH_POSITIVE: IntPredicate = lambda depth: depth > 0
     PROCESSES_IN_RANGE: IntPredicate = lambda processes: 1 <= processes <= cpu_count()
 
@@ -58,20 +59,24 @@ class Negamax(AI):
     def negamax(
         self, game: GridGame, depth: int, alpha: float = -INF, beta: float = INF
     ) -> float:
-        if depth == 0 or len(game.valid) == 0:
+        if depth == 0 or game.is_over:
             return self.score(game)
 
-        best_score = -self.INF
+        if not game.has_move:
+            children = [deepcopy(game).next_turn()]
+        else:
+            children = [deepcopy(game).move(move) for move in game.valid]
 
-        for move in game.valid:
-            score = -self.negamax(deepcopy(game).move(move), depth - 1, -beta, -alpha)
-            best_score = max(best_score, score)
+        score = -INF
+
+        for child in children:
+            score = max(score, -self.negamax(child, depth - 1, -beta, -alpha))
             alpha = max(alpha, score)
 
             if alpha >= beta:
                 break
 
-        return best_score
+        return score
 
 
 class Greedy(AI):
