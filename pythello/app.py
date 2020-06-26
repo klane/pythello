@@ -247,7 +247,11 @@ class App:
             self.change_game(**{event.ui_object_id: player})
 
     def make_move(self, move: Optional[Move] = None) -> None:
-        self.game.move(move)
+        self.game.move_with_pass(move)
+
+        if self.game.is_over:
+            self.game.end_game()
+
         self.turn += 1
         self.time_since_turn = 0
         self.update_graph()

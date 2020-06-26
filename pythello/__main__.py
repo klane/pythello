@@ -36,8 +36,9 @@ if __name__ == '__main__':
 
         for _ in range(games):
             while not game.is_over:
-                game.move()
+                game.move_with_pass()
 
+            game.end_game()
             results[game.winner] += 1
             game.reset()
 

@@ -121,22 +121,13 @@ class GridGame:
 
 
 class Othello(GridGame):
-    def next_turn(self) -> GridGame:
-        super().next_turn()
+    def move_with_pass(self, move: Optional[Move] = None) -> GridGame:
+        self.move(move)
 
-        if len(self._valid) == 0:
+        if not self.has_move and not self.is_over:
             if self._verbose:
-                print(self.player, 'has no valid moves')
-                print(self._board)
+                print(f'Passing {self.player}')
 
-            super().next_turn()
-
-            if len(self._valid) == 0:
-                if self._verbose:
-                    print(self.player, 'has no valid moves')
-
-                self.end_game()
-            elif self._verbose:
-                print(self.player, 'has valid moves')
+            self.next_turn()
 
         return self
