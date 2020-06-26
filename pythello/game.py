@@ -66,9 +66,10 @@ class GridGame:
         self.next_turn()
         return self
 
-    def next_turn(self) -> None:
+    def next_turn(self) -> GridGame:
         self._index ^= 1
         self._valid = self._board.valid_moves(self.value)
+        return self
 
     @property
     def player(self) -> Player:
@@ -78,11 +79,12 @@ class GridGame:
     def players(self) -> Tuple[Player, Player]:
         return self._players[0].player, self._players[1].player
 
-    def reset(self) -> None:
+    def reset(self) -> GridGame:
         self._index = 0
         self._board.reset()
         self._score = [0]
         self._valid = self._board.valid_moves(self.value)
+        return self
 
     @property
     def score(self) -> List[int]:
@@ -108,7 +110,7 @@ class GridGame:
 
 
 class Othello(GridGame):
-    def next_turn(self) -> None:
+    def next_turn(self) -> GridGame:
         super().next_turn()
 
         if len(self._valid) == 0:
@@ -125,3 +127,5 @@ class Othello(GridGame):
                 self.end_game()
             elif self._verbose:
                 print(self.player, 'has valid moves')
+
+        return self
