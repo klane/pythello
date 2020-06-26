@@ -46,6 +46,10 @@ class GridGame:
             print(f'{self.winner} {max(score)}-{min(score)} in {n_turns} turns')
 
     @property
+    def has_move(self) -> bool:
+        return len(self._valid) > 0
+
+    @property
     def is_over(self) -> bool:
         return len(self._valid) == 0
 
