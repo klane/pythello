@@ -41,17 +41,17 @@ class Board(ABC):
     def place_piece(self, piece: Move, player: int) -> None:
         """Place a piece on the board for the specified player."""
 
-    @abstractmethod
     def player_score(self, player: int) -> int:
         """Return the number of pieces held by the specified player."""
+        return len(self.get_pieces(player))
 
     @abstractmethod
     def reset(self) -> None:
         """Reset the board to its initial state."""
 
-    @abstractmethod
     def score(self) -> int:
         """Return the current score of the game."""
+        return self.player_score(1) - self.player_score(-1)
 
     @property
     def size(self) -> int:
