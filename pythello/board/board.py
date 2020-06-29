@@ -21,6 +21,10 @@ class Board(ABC):
         """Multiply board by another board or a constant"""
 
     @abstractmethod
+    def captured(self, player: int, move: Move) -> Set[Move]:
+        """Get all pieces captured for the given move by the specified player."""
+
+    @abstractmethod
     def get_pieces(self, player: int) -> Set[Move]:
         """Get all pieces on the board for the specified player."""
 

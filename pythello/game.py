@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, NamedTuple, Optional, Tuple
+from typing import TYPE_CHECKING, List, NamedTuple, Optional, Set, Tuple
 
 from pythello.ai.strategy import AI
 
@@ -28,6 +28,9 @@ class GridGame:
     @property
     def board(self) -> Board:
         return self._board
+
+    def captured(self, move: Move) -> Set[Move]:
+        return self._board.captured(self.value, move)
 
     def end_game(self) -> None:
         score = [self._board.player_score(p.value) for p in self._players]

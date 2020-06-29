@@ -83,15 +83,15 @@ class Greedy(AI):
     def move(self, game: GridGame) -> Move:
         num_turned = defaultdict(list)
 
-        for k, v in game.valid.items():
-            num_turned[len(v)].append(k)
+        for move in game.valid:
+            num_turned[len(game.captured(move))].append(move)
 
         return random.choice(num_turned[max(num_turned.keys())])
 
 
 class Random(AI):
     def move(self, game: GridGame) -> Move:
-        return random.choice(list(game.valid.keys()))
+        return random.choice(list(game.valid))
 
 
 class PlayerMeta(EnumMeta, ABCMeta):

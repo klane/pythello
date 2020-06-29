@@ -168,7 +168,7 @@ class App:
         self.draw_circle(self.screen, x, y, radius, color)
 
     def draw_score_gain(self, row: int, col: int) -> None:
-        pieces_gained = len(self.game.valid[(row, col)])
+        pieces_gained = len(self.game.captured((row, col)))
         textsurface = self.font.render(str(pieces_gained), True, TEXT_COLOR)
         x, y = self.get_grid_coords(row, col)
         x -= textsurface.get_width() / 2 - 1
