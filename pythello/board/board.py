@@ -24,10 +24,6 @@ class Board(ABC):
     def captured(self, player: int, move: Move) -> Set[Move]:
         """Get all pieces captured for the given move by the specified player."""
 
-    @abstractmethod
-    def get_pieces(self, player: int) -> Set[Move]:
-        """Get all pieces on the board for the specified player."""
-
     @property
     def is_full(self) -> bool:
         return self.num_empty == 0
@@ -41,9 +37,13 @@ class Board(ABC):
     def place_piece(self, piece: Move, player: int) -> None:
         """Place a piece on the board for the specified player."""
 
+    @abstractmethod
+    def player_pieces(self, player: int) -> Set[Move]:
+        """Get all pieces on the board for the specified player."""
+
     def player_score(self, player: int) -> int:
         """Return the number of pieces held by the specified player."""
-        return len(self.get_pieces(player))
+        return len(self.player_pieces(player))
 
     @abstractmethod
     def reset(self) -> None:

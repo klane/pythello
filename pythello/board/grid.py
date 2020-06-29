@@ -37,10 +37,6 @@ class GridBoard(Board):
     def captured(self, player: int, move: Move) -> Set[Move]:
         return self._valid[player][move]
 
-    def get_pieces(self, player: int) -> Set[Move]:
-        pieces = np.nonzero(self._board == player)
-        return {(row, col) for row, col in zip(*pieces)}
-
     @property
     def num_empty(self) -> int:
         return int(np.count_nonzero(self._board == 0))
@@ -48,6 +44,10 @@ class GridBoard(Board):
     def place_piece(self, piece: Move, player: int) -> None:
         for p in self._valid[player][piece]:
             self._board[p] = player
+
+    def player_pieces(self, player: int) -> Set[Move]:
+        pieces = np.nonzero(self._board == player)
+        return {(row, col) for row, col in zip(*pieces)}
 
     def player_score(self, player: int) -> int:
         return int(np.count_nonzero(self._board == player))
