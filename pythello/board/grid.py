@@ -43,7 +43,8 @@ class GridBoard(Board):
         return int(np.count_nonzero(self._board == 0))
 
     def place_piece(self, piece: Move, player: int) -> None:
-        self._board[piece] = player
+        for p in self.valid_moves(player)[piece]:
+            self._board[p] = player
 
     def player_score(self, player: int) -> int:
         return int(np.count_nonzero(self._board == player))
