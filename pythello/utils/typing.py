@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Set, Tuple, Union
+from typing import Any, Callable, Set, Tuple, Union
 
 from pythello.ai.strategy import AI
 from pythello.game import GridGame
