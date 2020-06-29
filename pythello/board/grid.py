@@ -43,8 +43,18 @@ class GridBoard(Board):
         return int(np.count_nonzero(self._board == 0))
 
     def place_piece(self, piece: Move, player: int) -> None:
-        for p in self.valid_moves(player)[piece]:
-            self._board[p] = player
+        for dir in GridBoard.DIRECTIONS:
+            index = [x if d == 0 else slice(x, None, d) for x, d in zip(piece, dir)]
+            line = self._board[tuple(index)]
+
+            if len(line.shape) == 2:
+                line = line.diagonal()
+
+            n = np.argmax(line == player)
+
+            if np.all(line[1:n] == -player) and n > 1:
+                for i in range(n):
+                    self._board[tuple(piece + i * dir)] = player
 
     def player_score(self, player: int) -> int:
         return int(np.count_nonzero(self._board == player))
