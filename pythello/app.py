@@ -12,7 +12,7 @@ from pythello.board.grid import GridBoard
 from pythello.game import Othello
 
 if TYPE_CHECKING:
-    from pythello.utils.typing import Move, Player as PlayerType
+    from pythello.utils.typing import Player as PlayerType, Position
 
 CAPTION = 'Pythello'
 PLAYER1_COLOR = pg.Color('black')
@@ -246,7 +246,7 @@ class App:
             player = Player[event.text] if event.text in ai_players else event.text
             self.change_game(**{event.ui_object_id: player})
 
-    def make_move(self, move: Optional[Move] = None) -> None:
+    def make_move(self, move: Optional[Position] = None) -> None:
         self.game.move_with_pass(move)
 
         if self.game.is_over:

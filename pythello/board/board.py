@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Set, Union
+from typing import TYPE_CHECKING, Union
 
 from pythello.utils.validate import Condition, check
 
 if TYPE_CHECKING:
-    from pythello.utils.typing import IntPredicate, Move, ValidMoves
+    from pythello.utils.typing import IntPredicate, Position, PositionSet
 
 
 class Board(ABC):
@@ -21,7 +21,7 @@ class Board(ABC):
         """Multiply board by another board or a constant"""
 
     @abstractmethod
-    def captured(self, player: int, move: Move) -> Set[Move]:
+    def captured(self, player: int, move: Position) -> PositionSet:
         """Get all pieces captured for the given move by the specified player."""
 
     @property
@@ -34,11 +34,11 @@ class Board(ABC):
         """Return the number of empty spaces on the board."""
 
     @abstractmethod
-    def place_piece(self, piece: Move, player: int) -> None:
+    def place_piece(self, piece: Position, player: int) -> None:
         """Place a piece on the board for the specified player."""
 
     @abstractmethod
-    def player_pieces(self, player: int) -> Set[Move]:
+    def player_pieces(self, player: int) -> PositionSet:
         """Get all pieces on the board for the specified player."""
 
     def player_score(self, player: int) -> int:
@@ -58,5 +58,5 @@ class Board(ABC):
         return self._size
 
     @abstractmethod
-    def valid_moves(self, player: int) -> ValidMoves:
+    def valid_moves(self, player: int) -> PositionSet:
         """Return a dictionary mapping moves to pieces gained by the given player."""

@@ -5,7 +5,7 @@ from pythello.game import GridGame
 
 Function = Callable[..., Any]
 IntPredicate = Callable[[int], bool]
-Move = Tuple[int, int]
 Player = Union[AI, str]
+Position = Tuple[int, int]
+PositionSet = Set[Position]
 Scorer = Callable[[GridGame], float]
-ValidMoves = Set[Move]

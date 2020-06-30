@@ -14,14 +14,14 @@ from pythello.utils.validate import Condition, check
 
 if TYPE_CHECKING:
     from pythello.game import GridGame
-    from pythello.utils.typing import IntPredicate, Move, Scorer
+    from pythello.utils.typing import IntPredicate, Position, Scorer
 
 INF = float('inf')
 
 
 class AI(ABC):
     @abstractmethod
-    def move(self, game: GridGame) -> Move:
+    def move(self, game: GridGame) -> Position:
         """Get next move."""
 
 
@@ -43,7 +43,7 @@ class Negamax(AI):
         self.score = score
         self.processes = processes
 
-    def move(self, game: GridGame) -> Move:
+    def move(self, game: GridGame) -> Position:
         if self.processes > 1:
             with Pool(self.processes) as pool:
                 scores = pool.map(partial(self.negamax_root, game=game), game.valid)
@@ -53,7 +53,7 @@ class Negamax(AI):
         index = random.choice([i for i, s in enumerate(scores) if s == max(scores)])
         return list(game.valid)[index]
 
-    def negamax_root(self, move: Move, game: GridGame) -> float:
+    def negamax_root(self, move: Position, game: GridGame) -> float:
         return -self.negamax(deepcopy(game).move(move), self.depth - 1)
 
     def negamax(
@@ -80,7 +80,7 @@ class Negamax(AI):
 
 
 class Greedy(AI):
-    def move(self, game: GridGame) -> Move:
+    def move(self, game: GridGame) -> Position:
         num_turned = defaultdict(list)
 
         for move in game.valid:
@@ -90,7 +90,7 @@ class Greedy(AI):
 
 
 class Random(AI):
-    def move(self, game: GridGame) -> Move:
+    def move(self, game: GridGame) -> Position:
         return random.choice(list(game.valid))
 
 
@@ -112,5 +112,5 @@ class Player(AI, Enum, metaclass=PlayerMeta):
     def __init__(self, ai: AI):
         self.ai = ai
 
-    def move(self, game: GridGame) -> Move:
+    def move(self, game: GridGame) -> Position:
         return self.ai.move(game)

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import TYPE_CHECKING, Callable, Dict, Optional, Set, Union
+from typing import TYPE_CHECKING, Callable, Dict, Optional, Union
 
 import numpy as np
 
@@ -9,7 +9,7 @@ from pythello.board.board import Board
 from pythello.utils.validate import Condition, check
 
 if TYPE_CHECKING:
-    from pythello.utils.typing import Move, ValidMoves
+    from pythello.utils.typing import Position, PositionSet
 
 DIRECTIONS = [(i, j) for i in [-1, 0, 1] for j in [-1, 0, 1] if (i != 0 or j != 0)]
 ArrayPredicate = Callable[[Optional[np.ndarray]], bool]
@@ -23,7 +23,7 @@ class GridBoard(Board):
     @check(Condition(BOARD_SQUARE, 'Board must be square'))
     def __init__(self, size: int = 8, board: Optional[np.ndarray] = None):
         super().__init__(size if board is None else board.shape[0])
-        self._valid: Dict[int, Dict[Move, ValidMoves]] = defaultdict(dict)
+        self._valid: Dict[int, Dict[Position, PositionSet]] = defaultdict(dict)
 
         if board is None:
             self._board = np.zeros((self._size, self._size), dtype=np.int8)
@@ -34,18 +34,18 @@ class GridBoard(Board):
     def __mul__(self, other: Union[Board, int]) -> Board:
         return GridBoard(board=self._board * other)
 
-    def captured(self, player: int, move: Move) -> Set[Move]:
+    def captured(self, player: int, move: Position) -> PositionSet:
         return self._valid[player][move]
 
     @property
     def num_empty(self) -> int:
         return int(np.count_nonzero(self._board == 0))
 
-    def place_piece(self, piece: Move, player: int) -> None:
+    def place_piece(self, piece: Position, player: int) -> None:
         for p in self._valid[player][piece]:
             self._board[p] = player
 
-    def player_pieces(self, player: int) -> Set[Move]:
+    def player_pieces(self, player: int) -> PositionSet:
         pieces = np.nonzero(self._board == player)
         return {(row, col) for row, col in zip(*pieces)}
 
@@ -63,7 +63,7 @@ class GridBoard(Board):
     def score(self) -> int:
         return int(self._board.sum())
 
-    def valid_moves(self, player: int) -> ValidMoves:
+    def valid_moves(self, player: int) -> PositionSet:
         valid = defaultdict(set)
 
         for pt in zip(*np.where(self._board == player)):

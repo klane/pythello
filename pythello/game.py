@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, NamedTuple, Optional, Set, Tuple
+from typing import TYPE_CHECKING, List, NamedTuple, Optional, Tuple
 
 from pythello.ai.strategy import AI
 
 if TYPE_CHECKING:
     from pythello.board.board import Board
-    from pythello.utils.typing import Move, Player, ValidMoves
+    from pythello.utils.typing import Player, Position, PositionSet
 
 
 class AssignedPlayer(NamedTuple):
@@ -29,7 +29,7 @@ class GridGame:
     def board(self) -> Board:
         return self._board
 
-    def captured(self, move: Move) -> Set[Move]:
+    def captured(self, move: Position) -> PositionSet:
         return self._board.captured(self.value, move)
 
     def end_game(self) -> None:
@@ -63,7 +63,7 @@ class GridGame:
 
         return False
 
-    def move(self, move: Optional[Move] = None) -> GridGame:
+    def move(self, move: Optional[Position] = None) -> GridGame:
         if move is None:
             if isinstance(self.player, AI):
                 move = self.player.move(self)
@@ -103,7 +103,7 @@ class GridGame:
         return self._score
 
     @property
-    def valid(self) -> ValidMoves:
+    def valid(self) -> PositionSet:
         return self._valid
 
     @property
@@ -122,7 +122,7 @@ class GridGame:
 
 
 class Othello(GridGame):
-    def move_with_pass(self, move: Optional[Move] = None) -> GridGame:
+    def move_with_pass(self, move: Optional[Position] = None) -> GridGame:
         self.move(move)
 
         if not self.has_move and not self.is_over:
