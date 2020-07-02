@@ -32,22 +32,6 @@ class GridGame:
     def captured(self, move: Position) -> PositionSet:
         return self._board.captured(self.value, move)
 
-    def end_game(self) -> None:
-        score = [self._board.player_score(p.value) for p in self._players]
-        n_turns = len(self._score) - 1
-
-        if self._verbose:
-            print('Game over!')
-            print(self._players[0].player, 'score:', score[0])
-            print(self._players[1].player, 'score:', score[1])
-
-        if self.winner is None:
-            print('Draw')
-        elif self._verbose:
-            print(self.winner, 'in', n_turns, 'turns')
-        else:
-            print(f'{self.winner} {max(score)}-{min(score)} in {n_turns} turns')
-
     @property
     def has_move(self) -> bool:
         return len(self._valid) > 0
@@ -90,6 +74,22 @@ class GridGame:
     @property
     def players(self) -> Tuple[Player, Player]:
         return self._players[0].player, self._players[1].player
+
+    def print_results(self) -> None:
+        score = [self._board.player_score(p.value) for p in self._players]
+        n_turns = len(self._score) - 1
+
+        if self._verbose:
+            print('Game over!')
+            print(self._players[0].player, 'score:', score[0])
+            print(self._players[1].player, 'score:', score[1])
+
+        if self.winner is None:
+            print('Draw')
+        elif self._verbose:
+            print(self.winner, 'in', n_turns, 'turns')
+        else:
+            print(f'{self.winner} {max(score)}-{min(score)} in {n_turns} turns')
 
     def reset(self) -> GridGame:
         self._index = 0

@@ -250,7 +250,7 @@ class App:
         self.game.move_with_pass(move)
 
         if self.game.is_over:
-            self.game.end_game()
+            self.game.print_results()
 
         self.turn += 1
         self.time_since_turn = 0
