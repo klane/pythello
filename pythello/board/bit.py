@@ -40,6 +40,9 @@ class BitBoard(Board):
         self.players: Dict[int, int] = {}
         self.reset()
 
+    def __hash__(self) -> int:
+        return (self.players[1], self.players[-1]).__hash__()
+
     def __mul__(self, other: Union[Board, int]) -> Board:
         raise NotImplementedError('Multiply not yet implemented')
 

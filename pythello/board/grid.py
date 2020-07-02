@@ -31,6 +31,12 @@ class GridBoard(Board):
         else:
             self._board = board.copy()
 
+    def __hash__(self) -> int:
+        max_i = self._size ** 2 - 1
+        player1 = sum(2 ** int(max_i - i) for i in np.flatnonzero(self._board == 1))
+        player2 = sum(2 ** int(max_i - i) for i in np.flatnonzero(self._board == -1))
+        return (player1, player2).__hash__()
+
     def __mul__(self, other: Union[Board, int]) -> Board:
         return GridBoard(board=self._board * other)
 

@@ -16,6 +16,9 @@ class Board(ABC):
     def __init__(self, size: int):
         self._size = size
 
+    def __hash__(self) -> int:
+        """Get board hash code"""
+
     @abstractmethod
     def __mul__(self, other: Union[Board, int]) -> Board:
         """Multiply board by another board or a constant"""
