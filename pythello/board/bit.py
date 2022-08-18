@@ -1,43 +1,50 @@
 from __future__ import annotations
 
-from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, Tuple, Union
+from operator import lshift, rshift
+from typing import TYPE_CHECKING, Callable, Dict, NamedTuple, Tuple, Union
 
 from pythello.board.board import Board
 
 if TYPE_CHECKING:
-    from pythello.utils.typing import Function, Position, PositionSet
-
-MASK_WEST = 0x7F7F7F7F7F7F7F7F
-MASK_EAST = 0xFEFEFEFEFEFEFEFE
-MASK_FULL = 0xFFFFFFFFFFFFFFFF
+    from pythello.utils.typing import Position, PositionSet
 
 
-class FunctionWrapper:
-    """Mask a function as an Object"""
-
-    def __init__(self, function: Function):
-        self.function = function
-
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        return self.function(*args, **kwargs)
-
-
-class Shift(FunctionWrapper, Enum):
-    NORTH = FunctionWrapper(lambda board: board << 8)
-    SOUTH = FunctionWrapper(lambda board: board >> 8)
-    WEST = FunctionWrapper(lambda board: (board & MASK_WEST) << 1)
-    EAST = FunctionWrapper(lambda board: (board & MASK_EAST) >> 1)
-    NORTHWEST = FunctionWrapper(lambda board: Shift.NORTH(Shift.WEST(board)))
-    NORTHEAST = FunctionWrapper(lambda board: Shift.NORTH(Shift.EAST(board)))
-    SOUTHWEST = FunctionWrapper(lambda board: Shift.SOUTH(Shift.WEST(board)))
-    SOUTHEAST = FunctionWrapper(lambda board: Shift.SOUTH(Shift.EAST(board)))
+class Shift(NamedTuple):
+    operator: Callable[[int, int], int]
+    nbits: int
 
 
 class BitBoard(Board):
     def __init__(self, size: int = 8):
         super().__init__(size)
         self.players: Dict[int, int] = {}
+
+        mask_right = int(('0' + '1' * (size - 1)) * size, 2)
+        mask_left = int(('1' * (size - 1) + '0') * size, 2)
+        self.mask_full = int('1' * size ** 2, 2)
+
+        self.masks = (
+            mask_right,                             # right
+            mask_right >> size,                     # down + right
+            self.mask_full,                         # down
+            mask_left >> size,                      # down + left
+            mask_left,                              # left
+            (mask_left << size) & self.mask_full,   # up + left
+            self.mask_full,                         # up
+            (mask_right << size) & self.mask_full,  # up + right
+        )
+
+        self.shifts = (
+            Shift(rshift, 1),         # right
+            Shift(rshift, size + 1),  # down + right
+            Shift(rshift, size),      # down
+            Shift(rshift, size - 1),  # down + left
+            Shift(lshift, 1),         # left
+            Shift(lshift, size + 1),  # up + left
+            Shift(lshift, size),      # up
+            Shift(lshift, size - 1),  # up + right
+        )
+
         self.reset()
 
     def __hash__(self) -> int:
@@ -46,74 +53,83 @@ class BitBoard(Board):
     def __mul__(self, other: Union[Board, int]) -> Board:
         raise NotImplementedError('Multiply not yet implemented')
 
-    def __captured(self, player: int, move: Position) -> Tuple[int, int, int]:
+    def _captured(self, player: int, move: Position) -> Tuple[int, int, int]:
         current = self.players[player]
         opponent = self.players[-player]
         index = move[0] * self._size + move[1]
-        mv = 2 ** (self._size ** 2 - index - 1)
-        current |= mv
-        captured_total = mv
+        mv = 1 << (self._size ** 2 - index - 1)
+        captured = mv
 
-        for shift in Shift:
-            captured = shift(mv) & opponent
+        for shift, mask in zip(self.shifts, self.masks):
+            current_mask = mask & current
+            opponent_mask = mask & opponent
+            x = shift.operator(mv, shift.nbits) & opponent_mask
 
             for _ in range(self._size - 3):
-                captured |= shift(captured) & opponent
+                x |= shift.operator(x, shift.nbits) & opponent_mask
 
-            if (shift(captured) & current) != 0:
-                current |= captured
-                opponent &= ~captured
-                captured_total |= captured
+            if (shift.operator(x, shift.nbits) & current_mask) != 0:
+                captured |= x
 
-        return current, opponent, captured_total
+        current |= captured
+        opponent &= ~captured
+        return current, opponent, captured
 
     def captured(self, player: int, move: Position) -> PositionSet:
-        _, _, captured = self.__captured(player, move)
-        return self.__translate(captured)
+        _, _, captured = self._captured(player, move)
+        return self._translate(captured)
 
     @property
     def is_full(self) -> bool:
-        return (self.players[1] | self.players[-1]) == MASK_FULL
+        return (self.players[1] | self.players[-1]) == self.mask_full
 
     @property
     def num_empty(self) -> int:
-        return bin((self.players[1] | self.players[-1]) ^ MASK_FULL).count('1')
+        return bin((self.players[1] | self.players[-1]) ^ self.mask_full).count('1')
 
-    def place_piece(self, piece: Position, player: int) -> None:
-        current, opponent, _ = self.__captured(player, piece)
-        self.players[player] = current
-        self.players[-player] = opponent
+    def place_piece(self, piece: Position, player: int, capture: bool = True) -> None:
+        if capture:
+            current, opponent, _ = self._captured(player, piece)
+            self.players[player] = current
+            self.players[-player] = opponent
+        else:
+            row, col = piece
+            mask = 1 << (row * self._size + col)
+            self.players[player] |= mask
 
     def player_pieces(self, player: int) -> PositionSet:
-        return self.__translate(self.players[player])
+        return self._translate(self.players[player])
 
     def player_score(self, player: int) -> int:
         return bin(self.players[player]).count('1')
 
     def reset(self) -> None:
-        self.players[1] = 0x810000000
-        self.players[-1] = 0x1008000000
+        self.players = {1: 0, -1: 0}
+        size_2 = self._size // 2
 
-    def __translate(self, moves: int) -> PositionSet:
-        move_str = f'{moves:064b}'
-        return {self.__translate_index(i) for i, c in enumerate(move_str) if c == '1'}
+        self.place_piece((size_2 - 1, size_2), 1, False)
+        self.place_piece((size_2, size_2 - 1), 1, False)
+        self.place_piece((size_2 - 1, size_2 - 1), -1, False)
+        self.place_piece((size_2, size_2), -1, False)
 
-    def __translate_index(self, index: int) -> Tuple[int, int]:
-        row = index // self._size
-        return row, index - self._size * row
+    def _translate(self, moves: int) -> PositionSet:
+        s = f'{moves:b}'.zfill(self._size ** 2)
+        return {(i // self._size, i % self._size) for i, c in enumerate(s) if c == '1'}
 
     def valid_moves(self, player: int) -> PositionSet:
         current = self.players[player]
         opponent = self.players[-player]
-        empty = (current | opponent) ^ MASK_FULL
+        empty = (current | opponent) ^ self.mask_full
         moves = 0
 
-        for shift in Shift:
-            captured = shift(current) & opponent
+        for shift, mask in zip(self.shifts, self.masks):
+            opponent_mask = mask & opponent
+            empty_mask = mask & empty
+            x = shift.operator(current, shift.nbits) & opponent_mask
 
             for _ in range(self._size - 3):
-                captured |= shift(captured) & opponent
+                x |= shift.operator(x, shift.nbits) & opponent_mask
 
-            moves |= shift(captured) & empty
+            moves |= shift.operator(x, shift.nbits) & empty_mask
 
-        return self.__translate(moves)
+        return self._translate(moves)
