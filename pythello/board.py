@@ -3,8 +3,10 @@ from __future__ import annotations
 from operator import lshift, rshift
 from typing import TYPE_CHECKING, Callable, Dict, NamedTuple, Tuple, Union
 
+from pythello.utils.validate import Condition, check
+
 if TYPE_CHECKING:
-    from pythello.utils.typing import Position, PositionSet
+    from pythello.utils.typing import IntPredicate, Position, PositionSet
 
 
 class Shift(NamedTuple):
@@ -13,6 +15,9 @@ class Shift(NamedTuple):
 
 
 class Board:
+    SIZE_POSITIVE_EVEN: IntPredicate = lambda size: size > 0 and size % 2 == 0
+
+    @check(Condition(SIZE_POSITIVE_EVEN, 'Board size must be a positive even integer'))
     def __init__(self, size: int = 8):
         self._size = size
         self.players: Dict[int, int] = {}
