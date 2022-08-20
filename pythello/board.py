@@ -3,8 +3,6 @@ from __future__ import annotations
 from operator import lshift, rshift
 from typing import TYPE_CHECKING, Callable, Dict, NamedTuple, Tuple, Union
 
-from pythello.board.board import Board
-
 if TYPE_CHECKING:
     from pythello.utils.typing import Position, PositionSet
 
@@ -14,9 +12,9 @@ class Shift(NamedTuple):
     nbits: int
 
 
-class BitBoard(Board):
+class Board:
     def __init__(self, size: int = 8):
-        super().__init__(size)
+        self._size = size
         self.players: Dict[int, int] = {}
 
         mask_right = int(('0' + '1' * (size - 1)) * size, 2)
