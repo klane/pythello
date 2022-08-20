@@ -51,9 +51,11 @@ class Board:
         self.reset()
 
     def __hash__(self) -> int:
+        """Get board hash code"""
         return (self.players[1], self.players[-1]).__hash__()
 
     def __mul__(self, other: Union[Board, int]) -> Board:
+        """Multiply board by another board or a constant"""
         raise NotImplementedError('Multiply not yet implemented')
 
     def _captured(self, player: int, move: Position) -> Tuple[int, int, int]:
@@ -79,18 +81,22 @@ class Board:
         return current, opponent, captured
 
     def captured(self, player: int, move: Position) -> PositionSet:
+        """Get all pieces captured for the given move by the specified player."""
         _, _, captured = self._captured(player, move)
         return self._translate(captured)
 
     @property
     def is_full(self) -> bool:
+        """Check if the board is full."""
         return (self.players[1] | self.players[-1]) == self.mask_full
 
     @property
     def num_empty(self) -> int:
+        """Return the number of empty spaces on the board."""
         return bin((self.players[1] | self.players[-1]) ^ self.mask_full).count('1')
 
     def place_piece(self, piece: Position, player: int, capture: bool = True) -> None:
+        """Place a piece on the board for the specified player."""
         if capture:
             current, opponent, _ = self._captured(player, piece)
             self.players[player] = current
@@ -101,12 +107,15 @@ class Board:
             self.players[player] |= mask
 
     def player_pieces(self, player: int) -> PositionSet:
+        """Get all pieces on the board for the specified player."""
         return self._translate(self.players[player])
 
     def player_score(self, player: int) -> int:
+        """Return the number of pieces held by the specified player."""
         return bin(self.players[player]).count('1')
 
     def reset(self) -> None:
+        """Reset the board to its initial state."""
         self.players = {1: 0, -1: 0}
         size_2 = self._size // 2
 
@@ -115,11 +124,20 @@ class Board:
         self.place_piece((size_2 - 1, size_2 - 1), -1, False)
         self.place_piece((size_2, size_2), -1, False)
 
+    def score(self) -> int:
+        """Return the current score of the game."""
+        return self.player_score(1) - self.player_score(-1)
+
+    @property
+    def size(self) -> int:
+        return self._size
+
     def _translate(self, moves: int) -> PositionSet:
         s = f'{moves:b}'.zfill(self._size ** 2)
         return {(i // self._size, i % self._size) for i, c in enumerate(s) if c == '1'}
 
     def valid_moves(self, player: int) -> PositionSet:
+        """Return the set of valid moves for the specified player."""
         current = self.players[player]
         opponent = self.players[-player]
         empty = (current | opponent) ^ self.mask_full
