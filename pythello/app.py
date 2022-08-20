@@ -8,7 +8,7 @@ import pygame_gui as pgui
 from pygame import gfxdraw
 
 from pythello.ai.strategy import AI, Player
-from pythello.board.grid import GridBoard
+from pythello.board import Board
 from pythello.game import Othello
 
 if TYPE_CHECKING:
@@ -27,7 +27,7 @@ TEXT_COLOR = pg.Color('black')
 
 class App:
     def __init__(self, size: int):
-        self.game = Othello('Player 1', 'Player 2', GridBoard())
+        self.game = Othello('Player 1', 'Player 2', Board())
         self.size = size
         self.menu_height = 25
         self.graph_height = 100
@@ -130,7 +130,7 @@ class App:
         if size is None:
             board = self.game.board
         elif size != self.game.board.size and size >= 4:
-            board = GridBoard(size)
+            board = Board(size)
             change = True
 
         if change:
