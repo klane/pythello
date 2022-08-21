@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from pythello.utils.validate import Condition, check
 
@@ -20,7 +20,7 @@ class Board(ABC):
         """Get board hash code"""
 
     @abstractmethod
-    def __mul__(self, other: Union[Board, int]) -> Board:
+    def __mul__(self, other: Board | int) -> Board:
         """Multiply board by another board or a constant"""
 
     @abstractmethod

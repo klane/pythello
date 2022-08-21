@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import TYPE_CHECKING, Callable, Dict, Optional, Union
+from typing import TYPE_CHECKING, Callable, Optional
 
 import numpy as np
 
@@ -21,9 +21,9 @@ class GridBoard(Board):
     )
 
     @check(Condition(BOARD_SQUARE, 'Board must be square'))
-    def __init__(self, size: int = 8, board: Optional[np.ndarray] = None):
+    def __init__(self, size: int = 8, board: np.ndarray | None = None):
         super().__init__(size if board is None else board.shape[0])
-        self._valid: Dict[int, Dict[Position, PositionSet]] = defaultdict(dict)
+        self._valid: dict[int, dict[Position, PositionSet]] = defaultdict(dict)
 
         if board is None:
             self._board = np.zeros((self._size, self._size), dtype=np.int8)
@@ -32,12 +32,12 @@ class GridBoard(Board):
             self._board = board.copy()
 
     def __hash__(self) -> int:
-        max_i = self._size ** 2 - 1
+        max_i = self._size**2 - 1
         player1 = sum(2 ** int(max_i - i) for i in np.flatnonzero(self._board == 1))
         player2 = sum(2 ** int(max_i - i) for i in np.flatnonzero(self._board == -1))
         return (player1, player2).__hash__()
 
-    def __mul__(self, other: Union[Board, int]) -> Board:
+    def __mul__(self, other: Board | int) -> Board:
         return GridBoard(board=self._board * other)
 
     def captured(self, player: int, move: Position) -> PositionSet:
