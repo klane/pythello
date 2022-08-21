@@ -117,7 +117,7 @@ class GridGame:
         if not self.is_over or score == 0:
             return None
 
-        sign = bool(score > 0) - bool(score < 0)
+        sign = (score > 0) - (score < 0)
         return next(p.player for p in self._players if p.value == sign)
 
 
