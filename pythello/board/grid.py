@@ -73,8 +73,8 @@ class GridBoard(Board):
         valid = defaultdict(set)
 
         for pt in zip(*np.where(self._board == player)):
-            for dir in DIRECTIONS:
-                index = [x if d == 0 else slice(x, None, d) for x, d in zip(pt, dir)]
+            for direc in DIRECTIONS:
+                index = [x if d == 0 else slice(x, None, d) for x, d in zip(pt, direc)]
                 line = self._board[tuple(index)]
 
                 if len(line.shape) == 2:
@@ -84,7 +84,7 @@ class GridBoard(Board):
 
                 if np.all(line[1:n] == -player) and n > 1:
                     pieces = [
-                        (pt[0] + i * dir[0], pt[1] + i * dir[1])
+                        (pt[0] + i * direc[0], pt[1] + i * direc[1])
                         for i in range(1, n + 1)
                     ]
                     valid[pieces[-1]].update(pieces)
