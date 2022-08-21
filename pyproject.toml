@@ -4,11 +4,11 @@ line-length = 88
 [tool.isort]
 profile = "black"
 
-[tool.tox]
-legacy_tox_ini = """
-[flake8]
-ignore = B950,W503
-max-line-length = 88
-max-complexity = 10
-select = B,C,E,F,W,T4,B9
-"""
+[tool.flakeheaven]
+format = "grouped"
+max_line_length = 88
+
+[tool.flakeheaven.plugins]
+pycodestyle = ["+*"]
+pyflakes = ["+*"]
+"flake8-*" = ["+*"]
