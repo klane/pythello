@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 
 class EdgeScore:
-    def __init__(self, size: int):
+    def __init__(self, size: int) -> None:
         self.board_score = np.ones((size, size), dtype=np.int8)
         self.board_score[0, :] = 3
         self.board_score[:, 0] = 3

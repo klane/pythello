@@ -15,7 +15,7 @@ class Shift(NamedTuple):
 
 
 class BitBoard(Board):
-    def __init__(self, size: int = 8):
+    def __init__(self, size: int = 8) -> None:
         super().__init__(size)
         self.players: dict[int, int] = {}
 

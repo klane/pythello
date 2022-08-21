@@ -27,7 +27,7 @@ TEXT_COLOR = pg.Color('black')
 
 
 class App:
-    def __init__(self, size: int):
+    def __init__(self, size: int) -> None:
         self.game = Othello('Player 1', 'Player 2', GridBoard())
         self.size = size
         self.menu_height = 25

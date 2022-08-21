@@ -17,7 +17,7 @@ class AssignedPlayer(NamedTuple):
 class GridGame:
     def __init__(
         self, player1: Player, player2: Player, board: Board, verbose: bool = False
-    ):
+    ) -> None:
         self._players = (AssignedPlayer(player1, 1), AssignedPlayer(player2, -1))
         self._board = board
         self._verbose = verbose

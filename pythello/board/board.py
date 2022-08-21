@@ -13,7 +13,7 @@ class Board(ABC):
     SIZE_POSITIVE_EVEN: IntPredicate = lambda size: size > 0 and size % 2 == 0
 
     @check(Condition(SIZE_POSITIVE_EVEN, 'Board size must be a positive even integer'))
-    def __init__(self, size: int):
+    def __init__(self, size: int) -> None:
         self._size = size
 
     def __hash__(self) -> int:

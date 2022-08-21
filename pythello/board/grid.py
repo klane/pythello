@@ -21,7 +21,7 @@ class GridBoard(Board):
     )
 
     @check(Condition(BOARD_SQUARE, 'Board must be square'))
-    def __init__(self, size: int = 8, board: np.ndarray | None = None):
+    def __init__(self, size: int = 8, board: np.ndarray | None = None) -> None:
         super().__init__(size if board is None else board.shape[0])
         self._valid: dict[int, dict[Position, PositionSet]] = defaultdict(dict)
 
