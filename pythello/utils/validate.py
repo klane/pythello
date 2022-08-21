@@ -16,7 +16,7 @@ class Condition(NamedTuple):
 def check(*conditions: Condition) -> Callable[[Function], Function]:
     def decorate(f: Function) -> Function:
         @wraps(f)
-        def g(*args: Any, **kwargs: Any) -> Any:
+        def g(*args: tuple[Any], **kwargs: dict[str, Any]) -> Any:
             fargs = inspect.getcallargs(f, *args, **kwargs)
 
             for c in conditions:

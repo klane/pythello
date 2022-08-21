@@ -103,7 +103,7 @@ class Player(AI, Enum, metaclass=PlayerMeta):
     GREEDY = Greedy()
     NEGAMAX = Negamax()
 
-    def __new__(cls, *args: Any) -> Any:
+    def __new__(cls, *args: tuple[Any]) -> Player:
         value = len(cls.__members__) + 1
         obj = object.__new__(cls)
         obj._value_ = value
