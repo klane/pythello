@@ -11,6 +11,33 @@ if TYPE_CHECKING:
     from pythello.utils.typing import IntPredicate, Position, PositionSet
 
 
+def corner_mask(size: int) -> int:
+    top_bottom = int('1' + '0' * (size - 2) + '1', 2)
+    corner = 0
+    corner |= top_bottom
+    corner |= top_bottom << (size**2 - size)
+    return corner
+
+
+def edge_mask(size: int, remove_corners: bool = True) -> int:
+    top_bottom = int('1' * size, 2)
+    edge = 0
+    edge |= top_bottom
+    edge |= top_bottom << (size**2 - size)
+
+    for i in range(size - 1):
+        edge |= 3 << ((i + 1) * size - 1)
+
+    if remove_corners:
+        edge &= ~corner_mask(size)
+
+    return edge
+
+
+def full_mask(size: int) -> int:
+    return int('1' * size**2, 2)
+
+
 class Shift(NamedTuple):
     operator: Callable[[int, int], int]
     nbits: int
@@ -26,7 +53,7 @@ class Board:
 
         mask_right = int(('0' + '1' * (size - 1)) * size, 2)
         mask_left = int(('1' * (size - 1) + '0') * size, 2)
-        self.mask_full = int('1' * size**2, 2)
+        self.mask_full = full_mask(size)
 
         self.masks = (
             mask_right,  # right
