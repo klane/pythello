@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import inspect
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from pythello.utils.typing import Function
 
 
@@ -16,7 +18,7 @@ class Condition(NamedTuple):
 def check(*conditions: Condition) -> Callable[[Function], Function]:
     def decorate(f: Function) -> Function:
         @wraps(f)
-        def g(*args: Any, **kwargs: Any) -> Any:
+        def g(*args: tuple[Any], **kwargs: dict[str, Any]) -> Any:
             fargs = inspect.getcallargs(f, *args, **kwargs)
 
             for c in conditions:

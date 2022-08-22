@@ -2,18 +2,19 @@
 line-length = 88
 
 [tool.isort]
-known_third_party = ["numpy", "pygame", "pygame_gui"]
+profile = "black"
 line_length = 88
-multi_line_output = 3
-force_grid_wrap = 0
-include_trailing_comma = "True"
-use_parentheses = "True"
 
-[tool.tox]
-legacy_tox_ini = """
-[flake8]
-ignore = B950,W503
-max-line-length = 88
-max-complexity = 10
-select = B,C,E,F,W,T4,B9
-"""
+[tool.flakeheaven]
+format = "grouped"
+show_source = true
+max_complexity = 10
+max_line_length = 88
+
+[tool.flakeheaven.plugins]
+pycodestyle = ["+*"]
+pyflakes = ["+*"]
+mccabe = ["+*"]
+dlint = ["+*", "-DUO102"]
+"flake8-*" = ["+*", "-ANN101", "-ANN401", "-AZ100", "-AZ200", "-TYP001"]
+"pep8-*" = ["+*"]

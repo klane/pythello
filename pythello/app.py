@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from itertools import product
-from typing import TYPE_CHECKING, Optional, Tuple
+from typing import TYPE_CHECKING
 
 import pygame as pg
 import pygame_gui as pgui
@@ -12,7 +12,8 @@ from pythello.board.grid import GridBoard
 from pythello.game import Othello
 
 if TYPE_CHECKING:
-    from pythello.utils.typing import Player as PlayerType, Position
+    from pythello.utils.typing import Player as PlayerType
+    from pythello.utils.typing import Position
 
 CAPTION = 'Pythello'
 PLAYER1_COLOR = pg.Color('black')
@@ -26,7 +27,7 @@ TEXT_COLOR = pg.Color('black')
 
 
 class App:
-    def __init__(self, size: int):
+    def __init__(self, size: int) -> None:
         self.game = Othello('Player 1', 'Player 2', GridBoard())
         self.size = size
         self.menu_height = 25
@@ -111,9 +112,9 @@ class App:
 
     def change_game(
         self,
-        player1: Optional[PlayerType] = None,
-        player2: Optional[PlayerType] = None,
-        size: Optional[int] = None,
+        player1: PlayerType | None = None,
+        player2: PlayerType | None = None,
+        size: int | None = None,
     ) -> None:
         change = False
 
@@ -193,7 +194,7 @@ class App:
 
             self.manager.process_events(event)
 
-    def get_grid_coords(self, row: int, col: int) -> Tuple[int, int]:
+    def get_grid_coords(self, row: int, col: int) -> tuple[int, int]:
         x = col * self.grid_size + self.grid_size // 2
         y = row * self.grid_size + self.grid_size // 2 + self.menu_height
         return x, y
@@ -246,7 +247,7 @@ class App:
             player = Player[event.text] if event.text in ai_players else event.text
             self.change_game(**{event.ui_object_id: player})
 
-    def make_move(self, move: Optional[Position] = None) -> None:
+    def make_move(self, move: Position | None = None) -> None:
         self.game.move_with_pass(move)
 
         if self.game.is_over:
@@ -319,7 +320,7 @@ class App:
                 self.time_since_turn += time
 
     def update_graph(self) -> None:
-        n = self.game.board.size ** 2
+        n = self.game.board.size**2
         h = self.graph_height
         w = self.size - self.size / (n - 4)
 

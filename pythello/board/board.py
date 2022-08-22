@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from pythello.utils.validate import Condition, check
 
@@ -13,14 +13,14 @@ class Board(ABC):
     SIZE_POSITIVE_EVEN: IntPredicate = lambda size: size > 0 and size % 2 == 0
 
     @check(Condition(SIZE_POSITIVE_EVEN, 'Board size must be a positive even integer'))
-    def __init__(self, size: int):
+    def __init__(self, size: int) -> None:
         self._size = size
 
     def __hash__(self) -> int:
         """Get board hash code"""
 
     @abstractmethod
-    def __mul__(self, other: Union[Board, int]) -> Board:
+    def __mul__(self, other: Board | int) -> Board:
         """Multiply board by another board or a constant"""
 
     @abstractmethod
