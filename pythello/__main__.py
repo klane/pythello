@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 from collections import defaultdict
-from typing import TYPE_CHECKING, Dict, Optional
+from typing import TYPE_CHECKING
 
 import pygame as pg
 
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     else:
         board = Board(game_size)
         game = Othello(player1, player2, board, verbose)
-        results: Dict[Optional[PlayerType], int] = defaultdict(int)
+        results: dict[PlayerType | None, int] = defaultdict(int)
 
         for _ in range(games):
             while not game.is_over:

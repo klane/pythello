@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from operator import lshift, rshift
-from typing import TYPE_CHECKING, Callable, Dict, NamedTuple, Tuple, Union
+from typing import TYPE_CHECKING, NamedTuple
 
 from pythello.utils.validate import Condition, check
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from pythello.utils.typing import IntPredicate, Position, PositionSet
 
 
@@ -18,33 +20,33 @@ class Board:
     SIZE_POSITIVE_EVEN: IntPredicate = lambda size: size > 0 and size % 2 == 0
 
     @check(Condition(SIZE_POSITIVE_EVEN, 'Board size must be a positive even integer'))
-    def __init__(self, size: int = 8):
+    def __init__(self, size: int = 8) -> None:
         self._size = size
-        self.players: Dict[int, int] = {}
+        self.players: dict[int, int] = {}
 
         mask_right = int(('0' + '1' * (size - 1)) * size, 2)
         mask_left = int(('1' * (size - 1) + '0') * size, 2)
-        self.mask_full = int('1' * size ** 2, 2)
+        self.mask_full = int('1' * size**2, 2)
 
         self.masks = (
-            mask_right,                             # right
-            mask_right >> size,                     # down + right
-            self.mask_full,                         # down
-            mask_left >> size,                      # down + left
-            mask_left,                              # left
-            (mask_left << size) & self.mask_full,   # up + left
-            self.mask_full,                         # up
+            mask_right,  # right
+            mask_right >> size,  # down + right
+            self.mask_full,  # down
+            mask_left >> size,  # down + left
+            mask_left,  # left
+            (mask_left << size) & self.mask_full,  # up + left
+            self.mask_full,  # up
             (mask_right << size) & self.mask_full,  # up + right
         )
 
         self.shifts = (
-            Shift(rshift, 1),         # right
+            Shift(rshift, 1),  # right
             Shift(rshift, size + 1),  # down + right
-            Shift(rshift, size),      # down
+            Shift(rshift, size),  # down
             Shift(rshift, size - 1),  # down + left
-            Shift(lshift, 1),         # left
+            Shift(lshift, 1),  # left
             Shift(lshift, size + 1),  # up + left
-            Shift(lshift, size),      # up
+            Shift(lshift, size),  # up
             Shift(lshift, size - 1),  # up + right
         )
 
@@ -54,15 +56,15 @@ class Board:
         """Get board hash code"""
         return (self.players[1], self.players[-1]).__hash__()
 
-    def __mul__(self, other: Union[Board, int]) -> Board:
+    def __mul__(self, other: Board | int) -> Board:
         """Multiply board by another board or a constant"""
         raise NotImplementedError('Multiply not yet implemented')
 
-    def _captured(self, player: int, move: Position) -> Tuple[int, int, int]:
+    def _captured(self, player: int, move: Position) -> tuple[int, int, int]:
         current = self.players[player]
         opponent = self.players[-player]
         index = move[0] * self._size + move[1]
-        mv = 1 << (self._size ** 2 - index - 1)
+        mv = 1 << (self._size**2 - index - 1)
         captured = mv
 
         for shift, mask in zip(self.shifts, self.masks):
@@ -133,7 +135,7 @@ class Board:
         return self._size
 
     def _translate(self, moves: int) -> PositionSet:
-        s = f'{moves:b}'.zfill(self._size ** 2)
+        s = f'{moves:b}'.zfill(self._size**2)
         return {(i // self._size, i % self._size) for i, c in enumerate(s) if c == '1'}
 
     def valid_moves(self, player: int) -> PositionSet:

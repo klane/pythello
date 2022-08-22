@@ -38,7 +38,7 @@ class Negamax(AI):
     )
     def __init__(
         self, depth: int = 4, processes: int = 4, score: Scorer = greedy_score
-    ):
+    ) -> None:
         self.depth = depth
         self.score = score
         self.processes = processes
@@ -103,13 +103,13 @@ class Player(AI, Enum, metaclass=PlayerMeta):
     GREEDY = Greedy()
     NEGAMAX = Negamax()
 
-    def __new__(cls, *args: Any) -> Any:
+    def __new__(cls, *args: tuple[Any]) -> Player:
         value = len(cls.__members__) + 1
         obj = object.__new__(cls)
         obj._value_ = value
         return obj
 
-    def __init__(self, ai: AI):
+    def __init__(self, ai: AI) -> None:
         self.ai = ai
 
     def move(self, game: GridGame) -> Position:
