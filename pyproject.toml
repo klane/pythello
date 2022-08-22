@@ -3,12 +3,18 @@ line-length = 88
 
 [tool.isort]
 profile = "black"
+line_length = 88
 
 [tool.flakeheaven]
 format = "grouped"
+show_source = true
+max_complexity = 10
 max_line_length = 88
 
 [tool.flakeheaven.plugins]
 pycodestyle = ["+*"]
 pyflakes = ["+*"]
-"flake8-*" = ["+*"]
+mccabe = ["+*"]
+dlint = ["+*", "-DUO102"]
+"flake8-*" = ["+*", "-ANN101", "-ANN401", "-AZ100", "-AZ200", "-TYP001"]
+"pep8-*" = ["+*"]
