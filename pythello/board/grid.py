@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from collections.abc import Callable
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -10,10 +9,13 @@ from pythello.board.board import Board
 from pythello.utils.validate import Condition, check
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from pythello.utils.typing import Position, PositionSet
 
+    ArrayPredicate = Callable[[np.ndarray | None], bool]
+
 DIRECTIONS = [(i, j) for i in [-1, 0, 1] for j in [-1, 0, 1] if (i != 0 or j != 0)]
-ArrayPredicate = Callable[[Optional[np.ndarray]], bool]
 
 
 class GridBoard(Board):

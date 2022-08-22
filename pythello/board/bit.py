@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from operator import lshift, rshift
 from typing import TYPE_CHECKING, NamedTuple
 
 from pythello.board.board import Board
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from pythello.utils.typing import Position, PositionSet
 
 
