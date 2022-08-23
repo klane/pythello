@@ -3,39 +3,13 @@ from __future__ import annotations
 from operator import lshift, rshift
 from typing import TYPE_CHECKING, NamedTuple
 
+from pythello.board.mask import full_mask, left_mask, right_mask
 from pythello.utils.validate import Condition, check
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from pythello.utils.typing import IntPredicate, Position, PositionSet
-
-
-def corner_mask(size: int) -> int:
-    top_bottom = int('1' + '0' * (size - 2) + '1', 2)
-    corner = 0
-    corner |= top_bottom
-    corner |= top_bottom << (size**2 - size)
-    return corner
-
-
-def edge_mask(size: int, remove_corners: bool = True) -> int:
-    top_bottom = int('1' * size, 2)
-    edge = 0
-    edge |= top_bottom
-    edge |= top_bottom << (size**2 - size)
-
-    for i in range(size - 1):
-        edge |= 3 << ((i + 1) * size - 1)
-
-    if remove_corners:
-        edge &= ~corner_mask(size)
-
-    return edge
-
-
-def full_mask(size: int) -> int:
-    return int('1' * size**2, 2)
 
 
 class Shift(NamedTuple):
@@ -51,22 +25,22 @@ class Board:
         self._size = size
         self.players: dict[int, int] = {}
 
-        mask_right = int(('0' + '1' * (size - 1)) * size, 2)
-        mask_left = int(('1' * (size - 1) + '0') * size, 2)
-        self.mask_full = full_mask(size)
+        _right_mask = right_mask(size)
+        _left_mask = left_mask(size)
+        self._full_mask = full_mask(size)
 
-        self.masks = (
-            mask_right,  # right
-            mask_right >> size,  # down + right
-            self.mask_full,  # down
-            mask_left >> size,  # down + left
-            mask_left,  # left
-            (mask_left << size) & self.mask_full,  # up + left
-            self.mask_full,  # up
-            (mask_right << size) & self.mask_full,  # up + right
+        self._masks = (
+            _right_mask,  # right
+            _right_mask >> size,  # down + right
+            self._full_mask,  # down
+            _left_mask >> size,  # down + left
+            _left_mask,  # left
+            (_left_mask << size) & self._full_mask,  # up + left
+            self._full_mask,  # up
+            (_right_mask << size) & self._full_mask,  # up + right
         )
 
-        self.shifts = (
+        self._shifts = (
             Shift(rshift, 1),  # right
             Shift(rshift, size + 1),  # down + right
             Shift(rshift, size),  # down
@@ -94,7 +68,7 @@ class Board:
         mv = 1 << (self._size**2 - index - 1)
         captured = mv
 
-        for shift, mask in zip(self.shifts, self.masks):
+        for shift, mask in zip(self._shifts, self._masks):
             current_mask = mask & current
             opponent_mask = mask & opponent
             x = shift.operator(mv, shift.nbits) & opponent_mask
@@ -117,12 +91,12 @@ class Board:
     @property
     def is_full(self) -> bool:
         """Check if the board is full."""
-        return (self.players[1] | self.players[-1]) == self.mask_full
+        return (self.players[1] | self.players[-1]) == self._full_mask
 
     @property
     def num_empty(self) -> int:
         """Return the number of empty spaces on the board."""
-        return bin((self.players[1] | self.players[-1]) ^ self.mask_full).count('1')
+        return bin((self.players[1] | self.players[-1]) ^ self._full_mask).count('1')
 
     def place_piece(self, piece: Position, player: int, capture: bool = True) -> None:
         """Place a piece on the board for the specified player."""
@@ -169,10 +143,10 @@ class Board:
         """Return the set of valid moves for the specified player."""
         current = self.players[player]
         opponent = self.players[-player]
-        empty = (current | opponent) ^ self.mask_full
+        empty = (current | opponent) ^ self._full_mask
         moves = 0
 
-        for shift, mask in zip(self.shifts, self.masks):
+        for shift, mask in zip(self._shifts, self._masks):
             opponent_mask = mask & opponent
             empty_mask = mask & empty
             x = shift.operator(current, shift.nbits) & opponent_mask

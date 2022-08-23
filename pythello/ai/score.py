@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from pythello.board import corner_mask, edge_mask, full_mask
+from pythello.board.mask import corner_mask, edge_mask, full_mask
 
 if TYPE_CHECKING:
     from pythello.game import GridGame
