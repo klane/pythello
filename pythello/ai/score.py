@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from pythello.board.mask import corner_mask, edge_mask, full_mask
+from pythello.board.mask import corner_mask, edge_mask, interior_mask
 
 if TYPE_CHECKING:
     from pythello.game import GridGame
@@ -12,7 +12,7 @@ class EdgeScore:
     def __init__(self, size: int) -> None:
         _corner_mask = corner_mask(size)
         _edge_mask = edge_mask(size, remove_corners=True)
-        _interior_mask = (_corner_mask | _edge_mask) ^ full_mask(size)
+        _interior_mask = interior_mask(size)
         self.weighted_masks = {
             _corner_mask: 9,
             _edge_mask: 3,

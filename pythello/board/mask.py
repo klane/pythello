@@ -25,6 +25,10 @@ def full_mask(size: int) -> int:
     return int('1' * size**2, 2)
 
 
+def interior_mask(size: int) -> int:
+    return edge_mask(size, remove_corners=False) ^ full_mask(size)
+
+
 def left_mask(size: int) -> int:
     return int(('1' * (size - 1) + '0') * size, 2)
 
