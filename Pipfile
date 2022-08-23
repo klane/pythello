@@ -6,7 +6,6 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-numpy = "*"
 pygame = "==2.0.0.dev6"
 pygame-gui = "*"
 
