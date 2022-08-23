@@ -53,6 +53,12 @@ class Board:
 
         self.reset()
 
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, Board):
+            return self.players == other.players
+
+        return False
+
     def __hash__(self) -> int:
         """Get board hash code"""
         return (self.players[1], self.players[-1]).__hash__()
