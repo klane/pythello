@@ -63,10 +63,6 @@ class Board:
         """Get board hash code"""
         return (self.players[1], self.players[-1]).__hash__()
 
-    def __mul__(self, other: Board | int) -> Board:
-        """Multiply board by another board or a constant"""
-        raise NotImplementedError('Multiply not yet implemented')
-
     def _captured(self, player: int, move: Position) -> tuple[int, int, int]:
         current = self.players[player]
         opponent = self.players[-player]
