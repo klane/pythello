@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import numpy as np
+from pythello.board.mask import corner_mask, edge_mask, interior_mask
 
 if TYPE_CHECKING:
     from pythello.game import GridGame
@@ -10,18 +10,26 @@ if TYPE_CHECKING:
 
 class EdgeScore:
     def __init__(self, size: int) -> None:
-        self.board_score = np.ones((size, size), dtype=np.int8)
-        self.board_score[0, :] = 3
-        self.board_score[:, 0] = 3
-        self.board_score[size - 1, :] = 3
-        self.board_score[:, size - 1] = 3
-        self.board_score[[0, 0, size - 1, size - 1], [0, size - 1, 0, size - 1]] = 9
+        _corner_mask = corner_mask(size)
+        _edge_mask = edge_mask(size, remove_corners=True)
+        _interior_mask = interior_mask(size)
+        self.weighted_masks = {
+            _corner_mask: 9,
+            _edge_mask: 3,
+            _interior_mask: 1,
+        }
 
     def __call__(self, game: GridGame) -> float:
-        if game.board.num_empty > game.board.size**2 / 2:
-            return int((game.board * self.board_score).score()) * game.value
-        else:
-            return greedy_score(game)
+        player = game.board.players[game.value]
+        opponent = game.board.players[-game.value]
+        score = 0
+
+        for mask, weight in self.weighted_masks.items():
+            player_count = bin(player & mask).count('1')
+            opponent_count = bin(opponent & mask).count('1')
+            score += (player_count - opponent_count) * weight
+
+        return score
 
 
 def greedy_score(game: GridGame) -> float:

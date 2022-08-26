@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, NamedTuple
 from pythello.ai.strategy import AI
 
 if TYPE_CHECKING:
-    from pythello.board.board import Board
+    from pythello.board import Board
     from pythello.utils.typing import Player, Position, PositionSet
 
 
