@@ -9,7 +9,7 @@ from pygame import gfxdraw
 
 from pythello.ai.strategy import AI, Player
 from pythello.board import Board
-from pythello.game import Othello
+from pythello.game import Game
 
 if TYPE_CHECKING:
     from pythello.utils.typing import Player as PlayerType
@@ -28,7 +28,7 @@ TEXT_COLOR = pg.Color('black')
 
 class App:
     def __init__(self, size: int) -> None:
-        self.game = Othello('Player 1', 'Player 2', Board())
+        self.game = Game('Player 1', 'Player 2', Board())
         self.size = size
         self.menu_height = 25
         self.graph_height = 100
@@ -135,7 +135,7 @@ class App:
             change = True
 
         if change:
-            self.game = Othello(player1, player2, board)
+            self.game = Game(player1, player2, board)
             self.size_label.set_text(f'Size: {board.size}')
             self.paused = True
             self.reset()

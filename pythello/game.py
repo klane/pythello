@@ -14,7 +14,7 @@ class AssignedPlayer(NamedTuple):
     value: int
 
 
-class GridGame:
+class Game:
     def __init__(
         self, player1: Player, player2: Player, board: Board, verbose: bool = False
     ) -> None:
@@ -47,7 +47,7 @@ class GridGame:
 
         return False
 
-    def move(self, move: Position | None = None) -> GridGame:
+    def move(self, move: Position | None = None) -> Game:
         if move is None:
             if isinstance(self.player, AI):
                 move = self.player.move(self)
@@ -62,7 +62,18 @@ class GridGame:
         self.next_turn()
         return self
 
-    def next_turn(self) -> GridGame:
+    def move_with_pass(self, move: Position | None = None) -> Game:
+        self.move(move)
+
+        if not self.has_move and not self.is_over:
+            if self._verbose:
+                print(f'Passing {self.player}')
+
+            self.next_turn()
+
+        return self
+
+    def next_turn(self) -> Game:
         self._index ^= 1
         self._valid = self._board.valid_moves(self.value)
         return self
@@ -91,7 +102,7 @@ class GridGame:
         else:
             print(f'{self.winner} {max(score)}-{min(score)} in {n_turns} turns')
 
-    def reset(self) -> GridGame:
+    def reset(self) -> Game:
         self._index = 0
         self._board.reset()
         self._score = [0]
@@ -119,16 +130,3 @@ class GridGame:
 
         sign = (score > 0) - (score < 0)
         return next(p.player for p in self._players if p.value == sign)
-
-
-class Othello(GridGame):
-    def move_with_pass(self, move: Position | None = None) -> GridGame:
-        self.move(move)
-
-        if not self.has_move and not self.is_over:
-            if self._verbose:
-                print(f'Passing {self.player}')
-
-            self.next_turn()
-
-        return self
