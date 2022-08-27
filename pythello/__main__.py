@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING
 
 import pygame as pg
 
-from pythello.ai.strategy import Player
 from pythello.app import App
 from pythello.board import Board
 from pythello.game import Othello
+from pythello.player import Player
 
 if TYPE_CHECKING:
     from pythello.utils.typing import Player as PlayerType
