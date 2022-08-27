@@ -30,7 +30,3 @@ class EdgeScore:
             score += (player_count - opponent_count) * weight
 
         return score
-
-
-def greedy_score(game: GridGame) -> float:
-    return game.board.score() * game.value
