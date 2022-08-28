@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from pythello.board.mask import corner_mask, edge_mask, interior_mask
 
 if TYPE_CHECKING:
-    from pythello.game import GridGame
+    from pythello.game import Game
 
 
 class EdgeScore:
@@ -19,7 +19,7 @@ class EdgeScore:
             _interior_mask: 1,
         }
 
-    def __call__(self, game: GridGame) -> float:
+    def __call__(self, game: Game) -> float:
         player = game.board.players[game.value]
         opponent = game.board.players[-game.value]
         score = 0

@@ -10,7 +10,7 @@ from pythello.player.negamax import Negamax
 from pythello.player.random import Random
 
 if TYPE_CHECKING:
-    from pythello.game import GridGame
+    from pythello.game import Game
     from pythello.utils.typing import Position
 
 
@@ -26,5 +26,5 @@ class Player(AI, Enum, metaclass=PlayerMeta):
     def __init__(self, ai: AI) -> None:
         self.ai = ai
 
-    def move(self, game: GridGame) -> Position:
+    def move(self, game: Game) -> Position:
         return self.ai.move(game)

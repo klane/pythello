@@ -11,7 +11,7 @@ from pythello.score import greedy_score
 from pythello.utils.validate import Condition, check
 
 if TYPE_CHECKING:
-    from pythello.game import GridGame
+    from pythello.game import Game
     from pythello.utils.typing import IntPredicate, Position, Scorer
 
 INF = float('inf')
@@ -35,7 +35,7 @@ class Negamax(AI):
         self.score = score
         self.processes = processes
 
-    def move(self, game: GridGame) -> Position:
+    def move(self, game: Game) -> Position:
         if self.processes > 1:
             with Pool(self.processes) as pool:
                 scores = pool.map(partial(self.negamax_root, game=game), game.valid)
@@ -45,11 +45,11 @@ class Negamax(AI):
         index = random.choice([i for i, s in enumerate(scores) if s == max(scores)])
         return list(game.valid)[index]
 
-    def negamax_root(self, move: Position, game: GridGame) -> float:
+    def negamax_root(self, move: Position, game: Game) -> float:
         return -self.negamax(deepcopy(game).move(move), self.depth - 1)
 
     def negamax(
-        self, game: GridGame, depth: int, alpha: float = -INF, beta: float = INF
+        self, game: Game, depth: int, alpha: float = -INF, beta: float = INF
     ) -> float:
         if depth == 0 or game.is_over:
             return self.score(game)
