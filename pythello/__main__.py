@@ -9,7 +9,7 @@ import pygame as pg
 from pythello.ai.strategy import Player
 from pythello.app import App
 from pythello.board import Board
-from pythello.game import Othello
+from pythello.game import Game
 
 if TYPE_CHECKING:
     from pythello.utils.typing import Player as PlayerType
@@ -31,7 +31,7 @@ if __name__ == '__main__':
         sys.exit()
     else:
         board = Board(game_size)
-        game = Othello(player1, player2, board, verbose)
+        game = Game(player1, player2, board, verbose)
         results: dict[PlayerType | None, int] = defaultdict(int)
 
         for _ in range(games):
