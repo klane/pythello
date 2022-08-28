@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 from pythello.ai.strategy import AI
 from pythello.score import greedy_score
-from pythello.utils.validate import Condition, check
+from pythello.utils.precondition import Condition, check
 
 if TYPE_CHECKING:
     from pythello.game import Game

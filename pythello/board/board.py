@@ -4,7 +4,7 @@ from operator import lshift, rshift
 from typing import TYPE_CHECKING, NamedTuple
 
 from pythello.board.mask import full_mask, left_mask, right_mask
-from pythello.utils.validate import Condition, check
+from pythello.utils.precondition import Condition, check
 
 if TYPE_CHECKING:
     from collections.abc import Callable
