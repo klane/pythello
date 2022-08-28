@@ -7,9 +7,10 @@ import pygame as pg
 import pygame_gui as pgui
 from pygame import gfxdraw
 
-from pythello.ai.strategy import AI, Player
+from pythello.ai.strategy import AI
 from pythello.board import Board
 from pythello.game import Game
+from pythello.player import Player
 
 if TYPE_CHECKING:
     from pythello.utils.typing import Player as PlayerType
