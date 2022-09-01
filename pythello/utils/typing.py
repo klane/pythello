@@ -7,6 +7,7 @@ from pythello.ai.strategy import AI
 from pythello.game import Game
 
 Function = Callable[..., Any]
+Predicate = Callable[..., bool]
 IntPredicate = Callable[[int], bool]
 Player = AI | str
 Position = tuple[int, int]

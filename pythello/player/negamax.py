@@ -8,28 +8,26 @@ from typing import TYPE_CHECKING
 
 from pythello.ai.strategy import AI
 from pythello.score import greedy_score
-from pythello.utils.validate import Condition, check
+from pythello.utils.precondition import precondition
 
 if TYPE_CHECKING:
     from pythello.game import Game
     from pythello.utils.typing import IntPredicate, Position, Scorer
 
+CPU_COUNT = cpu_count()
 INF = float('inf')
+DEPTH_POSITIVE: IntPredicate = lambda depth: depth > 0
+PROCESSES_IN_RANGE: IntPredicate = lambda processes: 1 <= processes <= CPU_COUNT
 
 
+@precondition(DEPTH_POSITIVE, 'Depth must be strictly positive')
+@precondition(
+    PROCESSES_IN_RANGE,
+    f'Processes must be between 1 and available cores ({CPU_COUNT})',
+)
 class Negamax(AI):
-    DEPTH_POSITIVE: IntPredicate = lambda depth: depth > 0
-    PROCESSES_IN_RANGE: IntPredicate = lambda processes: 1 <= processes <= cpu_count()
-
-    @check(
-        Condition(DEPTH_POSITIVE, 'Depth must be strictly positive'),
-        Condition(
-            PROCESSES_IN_RANGE,
-            f'Processes must be between 1 and available cores ({cpu_count()})',
-        ),
-    )
     def __init__(
-        self, depth: int = 4, processes: int = 4, score: Scorer = greedy_score
+        self, depth: int = 4, processes: int = CPU_COUNT, score: Scorer = greedy_score
     ) -> None:
         self.depth = depth
         self.score = score
