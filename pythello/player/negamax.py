@@ -6,7 +6,6 @@ from functools import partial
 from multiprocessing import Pool, cpu_count
 from typing import TYPE_CHECKING
 
-from pythello.ai.strategy import AI
 from pythello.score import greedy_score
 from pythello.utils.precondition import precondition
 
@@ -25,7 +24,7 @@ PROCESSES_IN_RANGE: IntPredicate = lambda processes: 1 <= processes <= CPU_COUNT
     PROCESSES_IN_RANGE,
     f'Processes must be between 1 and available cores ({CPU_COUNT})',
 )
-class Negamax(AI):
+class Negamax:
     def __init__(
         self, depth: int = 4, processes: int = CPU_COUNT, score: Scorer = greedy_score
     ) -> None:
@@ -33,7 +32,7 @@ class Negamax(AI):
         self.score = score
         self.processes = processes
 
-    def move(self, game: Game) -> Position:
+    def __call__(self, game: Game) -> Position:
         if self.processes > 1:
             with Pool(self.processes) as pool:
                 scores = pool.map(partial(self.negamax_root, game=game), game.valid)

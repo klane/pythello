@@ -7,7 +7,6 @@ import pygame as pg
 import pygame_gui as pgui
 from pygame import gfxdraw
 
-from pythello.ai.strategy import AI
 from pythello.board import Board
 from pythello.game import Game
 from pythello.player import Player
@@ -109,7 +108,7 @@ class App:
 
     @property
     def ai_turn(self) -> bool:
-        return isinstance(self.game.player, AI) and not self.game.is_over
+        return callable(self.game.player) and not self.game.is_over
 
     def change_game(
         self,
