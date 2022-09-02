@@ -1,6 +1,6 @@
-from .greedy import Greedy
+from .greedy import greedy_move
 from .negamax import Negamax
 from .player import Player
-from .random import Random
+from .random import random_move
 
-__all__ = ['Greedy', 'Negamax', 'Player', 'Random']
+__all__ = ['Negamax', 'Player', 'greedy_move', 'random_move']

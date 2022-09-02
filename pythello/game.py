@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, NamedTuple
 
-from pythello.ai.strategy import AI
-
 if TYPE_CHECKING:
     from pythello.board import Board
     from pythello.utils.typing import Player, Position, PositionSet
@@ -49,8 +47,8 @@ class Game:
 
     def move(self, move: Position | None = None) -> Game:
         if move is None:
-            if isinstance(self.player, AI):
-                move = self.player.move(self)
+            if callable(self.player):
+                move = self.player(self)
             else:
                 raise ValueError('Must provide move if current player is not an AI')
 
