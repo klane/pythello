@@ -4,6 +4,7 @@ from operator import lshift, rshift
 from typing import TYPE_CHECKING, NamedTuple
 
 from pythello.board.mask import full_mask, left_mask, right_mask
+from pythello.player import Color
 from pythello.utils.precondition import precondition
 
 if TYPE_CHECKING:
@@ -23,7 +24,7 @@ class Shift(NamedTuple):
 class Board:
     def __init__(self, size: int = 8) -> None:
         self._size = size
-        self.players: dict[int, int] = {}
+        self.players: list[int] = []
 
         _right_mask = right_mask(size)
         _left_mask = left_mask(size)
@@ -61,11 +62,11 @@ class Board:
 
     def __hash__(self) -> int:
         """Get board hash code"""
-        return (self.players[1], self.players[-1]).__hash__()
+        return hash(self.players)
 
-    def _captured(self, player: int, move: Position) -> tuple[int, int, int]:
+    def _captured(self, player: Color, move: Position) -> tuple[int, int, int]:
         current = self.players[player]
-        opponent = self.players[-player]
+        opponent = self.players[player.opponent]
         index = move[0] * self._size + move[1]
         mv = 1 << (self._size**2 - index - 1)
         captured = mv
@@ -85,53 +86,57 @@ class Board:
         opponent &= ~captured
         return current, opponent, captured
 
-    def captured(self, player: int, move: Position) -> PositionSet:
+    def captured(self, player: Color, move: Position) -> PositionSet:
         """Get all pieces captured for the given move by the specified player."""
         _, _, captured = self._captured(player, move)
         return self._translate(captured)
 
     @property
+    def filled(self) -> int:
+        return self.players[Color.BLACK] | self.players[Color.WHITE]
+
+    @property
     def is_full(self) -> bool:
         """Check if the board is full."""
-        return (self.players[1] | self.players[-1]) == self._full_mask
+        return self.filled == self._full_mask
 
     @property
     def num_empty(self) -> int:
         """Return the number of empty spaces on the board."""
-        return bin((self.players[1] | self.players[-1]) ^ self._full_mask).count('1')
+        return bin(self.filled ^ self._full_mask).count('1')
 
-    def place_piece(self, piece: Position, player: int, capture: bool = True) -> None:
+    def place_piece(self, piece: Position, player: Color, capture: bool = True) -> None:
         """Place a piece on the board for the specified player."""
         if capture:
             current, opponent, _ = self._captured(player, piece)
             self.players[player] = current
-            self.players[-player] = opponent
+            self.players[player.opponent] = opponent
         else:
             row, col = piece
             mask = 1 << (row * self._size + col)
             self.players[player] |= mask
 
-    def player_pieces(self, player: int) -> PositionSet:
+    def player_pieces(self, player: Color) -> PositionSet:
         """Get all pieces on the board for the specified player."""
         return self._translate(self.players[player])
 
-    def player_score(self, player: int) -> int:
+    def player_score(self, player: Color) -> int:
         """Return the number of pieces held by the specified player."""
         return bin(self.players[player]).count('1')
 
     def reset(self) -> None:
         """Reset the board to its initial state."""
-        self.players = {1: 0, -1: 0}
+        self.players = [0, 0]
         size_2 = self._size // 2
 
-        self.place_piece((size_2 - 1, size_2), 1, False)
-        self.place_piece((size_2, size_2 - 1), 1, False)
-        self.place_piece((size_2 - 1, size_2 - 1), -1, False)
-        self.place_piece((size_2, size_2), -1, False)
+        self.place_piece((size_2 - 1, size_2), Color.BLACK, False)
+        self.place_piece((size_2, size_2 - 1), Color.BLACK, False)
+        self.place_piece((size_2 - 1, size_2 - 1), Color.WHITE, False)
+        self.place_piece((size_2, size_2), Color.WHITE, False)
 
-    def score(self) -> int:
+    def score(self, player: Color = Color.BLACK) -> int:
         """Return the current score of the game."""
-        return self.player_score(1) - self.player_score(-1)
+        return self.player_score(player) - self.player_score(player.opponent)
 
     @property
     def size(self) -> int:
@@ -141,10 +146,10 @@ class Board:
         s = f'{moves:b}'.zfill(self._size**2)
         return {(i // self._size, i % self._size) for i, c in enumerate(s) if c == '1'}
 
-    def valid_moves(self, player: int) -> PositionSet:
+    def valid_moves(self, player: Color) -> PositionSet:
         """Return the set of valid moves for the specified player."""
         current = self.players[player]
-        opponent = self.players[-player]
+        opponent = self.players[player.opponent]
         empty = (current | opponent) ^ self._full_mask
         moves = 0
 

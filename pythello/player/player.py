@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import Enum, IntEnum
 from typing import TYPE_CHECKING
 
 from pythello.player.greedy import greedy_move
@@ -12,10 +12,19 @@ if TYPE_CHECKING:
     from pythello.utils.typing import Position
 
 
-class Player(Enum):
+class AI(Enum):
     RANDOM = random_move
     GREEDY = greedy_move
     NEGAMAX = Negamax()
 
     def __call__(self, game: Game) -> Position:
         return self.value(game)
+
+
+class Color(IntEnum):
+    BLACK = 0
+    WHITE = 1
+
+    @property
+    def opponent(self) -> Color:
+        return Color(self ^ 1)
