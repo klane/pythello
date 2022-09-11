@@ -7,4 +7,4 @@ if TYPE_CHECKING:
 
 
 def greedy_score(game: Game) -> float:
-    return game.board.score() * game.value
+    return game.board.score(game.current_player)

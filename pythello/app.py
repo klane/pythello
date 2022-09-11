@@ -9,11 +9,10 @@ from pygame import gfxdraw
 
 from pythello.board import Board
 from pythello.game import Game
-from pythello.player import Player
+from pythello.player import AI, Color
 
 if TYPE_CHECKING:
-    from pythello.utils.typing import Player as PlayerType
-    from pythello.utils.typing import Position
+    from pythello.utils.typing import Player, Position
 
 CAPTION = 'Pythello'
 PLAYER1_COLOR = pg.Color('black')
@@ -53,7 +52,7 @@ class App:
 
     def add_ui(self) -> None:
         elem_width = (self.size - 4 * self.menu_height) / 5
-        player_options = ['HUMAN'] + [player.name for player in Player]
+        player_options = ['HUMAN'] + [player.name for player in AI]
 
         pos = self.size - 2 * self.menu_height - elem_width
         size_down = pg.Rect(pos, 0, self.menu_height, self.menu_height)
@@ -112,8 +111,8 @@ class App:
 
     def change_game(
         self,
-        player1: PlayerType | None = None,
-        player2: PlayerType | None = None,
+        player1: Player | None = None,
+        player2: Player | None = None,
         size: int | None = None,
     ) -> None:
         change = False
@@ -243,8 +242,8 @@ class App:
                 else:
                     self.show_gain.select()
         elif event.user_type == pgui.UI_DROP_DOWN_MENU_CHANGED:
-            ai_players = {player.name for player in Player}
-            player = Player[event.text] if event.text in ai_players else event.text
+            ai_players = {player.name for player in AI}
+            player = AI[event.text] if event.text in ai_players else event.text
             self.change_game(**{event.ui_object_id: player})
 
     def make_move(self, move: Position | None = None) -> None:
@@ -275,11 +274,11 @@ class App:
             self.screen.blit(self.graph, (0, self.menu_height + self.size))
 
         # draw player 1 pieces
-        for row, col in self.game.board.player_pieces(1):
+        for row, col in self.game.board.player_pieces(Color.BLACK):
             self.draw_piece(row, col, self.radius, PLAYER1_COLOR)
 
         # draw player 2 pieces
-        for row, col in self.game.board.player_pieces(-1):
+        for row, col in self.game.board.player_pieces(Color.WHITE):
             self.draw_piece(row, col, self.radius, PLAYER2_COLOR)
 
         # draw valid moves
@@ -332,5 +331,5 @@ class App:
         self.draw_circle(self.graph, int(round(x)), int(round(y2)), 3, GRAPH_LINE_COLOR)
 
     def update_score(self) -> None:
-        self.player1_score.set_text(str(self.game.board.player_score(1)))
-        self.player2_score.set_text(str(self.game.board.player_score(-1)))
+        self.player1_score.set_text(str(self.game.board.player_score(Color.BLACK)))
+        self.player2_score.set_text(str(self.game.board.player_score(Color.WHITE)))

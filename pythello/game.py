@@ -1,26 +1,23 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, NamedTuple
+from typing import TYPE_CHECKING
+
+from pythello.player import Color
 
 if TYPE_CHECKING:
     from pythello.board import Board
     from pythello.utils.typing import Player, Position, PositionSet
 
 
-class AssignedPlayer(NamedTuple):
-    player: Player
-    value: int
-
-
 class Game:
     def __init__(
         self, player1: Player, player2: Player, board: Board, verbose: bool = False
     ) -> None:
-        self._players = (AssignedPlayer(player1, 1), AssignedPlayer(player2, -1))
+        self._players = (player1, player2)
+        self._current_player = Color.BLACK
         self._board = board
         self._verbose = verbose
-        self._index = 0
-        self._valid = self._board.valid_moves(self.value)
+        self._valid = self._board.valid_moves(self._current_player)
         self._score = [0]
 
     @property
@@ -28,7 +25,11 @@ class Game:
         return self._board
 
     def captured(self, move: Position) -> PositionSet:
-        return self._board.captured(self.value, move)
+        return self._board.captured(self._current_player, move)
+
+    @property
+    def current_player(self) -> Color:
+        return self._current_player
 
     @property
     def has_move(self) -> bool:
@@ -40,7 +41,7 @@ class Game:
             return True
 
         if not self.has_move:
-            next_player = self._players[self._index ^ 1].value
+            next_player = self._current_player.opponent
             return len(self._board.valid_moves(next_player)) == 0
 
         return False
@@ -55,7 +56,7 @@ class Game:
         if move not in self._valid:
             raise ValueError(f'Invalid move: {move}')
 
-        self._board.place_piece(move, self.value)
+        self._board.place_piece(move, self._current_player)
         self._score.append(self._board.score())
         self.next_turn()
         return self
@@ -72,39 +73,40 @@ class Game:
         return self
 
     def next_turn(self) -> Game:
-        self._index ^= 1
-        self._valid = self._board.valid_moves(self.value)
+        self._current_player = self._current_player.opponent
+        self._valid = self._board.valid_moves(self._current_player)
         return self
 
     @property
     def player(self) -> Player:
-        return self._players[self._index].player
+        return self._players[self._current_player]
 
     @property
     def players(self) -> tuple[Player, Player]:
-        return self._players[0].player, self._players[1].player
+        return self._players
 
     def print_results(self) -> None:
-        score = [self._board.player_score(p.value) for p in self._players]
+        score = [self._board.player_score(color) for color in Color]
         n_turns = len(self._score) - 1
 
         if self._verbose:
             print('Game over!')
-            print(self._players[0].player, 'score:', score[0])
-            print(self._players[1].player, 'score:', score[1])
+
+            for player, player_color, player_score in zip(self._players, Color, score):
+                print(f'{player} ({player_color.name.lower()}) score: {player_score}')
 
         if self.winner is None:
             print('Draw')
         elif self._verbose:
-            print(self.winner, 'in', n_turns, 'turns')
+            print(f'{self.winner} in {n_turns} turns')
         else:
             print(f'{self.winner} {max(score)}-{min(score)} in {n_turns} turns')
 
     def reset(self) -> Game:
-        self._index = 0
+        self._current_player = Color.BLACK
         self._board.reset()
         self._score = [0]
-        self._valid = self._board.valid_moves(self.value)
+        self._valid = self._board.valid_moves(self._current_player)
         return self
 
     @property
@@ -116,15 +118,10 @@ class Game:
         return self._valid
 
     @property
-    def value(self) -> int:
-        return self._players[self._index].value
-
-    @property
     def winner(self) -> Player | None:
         score = self._score[-1]
 
         if not self.is_over or score == 0:
             return None
 
-        sign = (score > 0) - (score < 0)
-        return next(p.player for p in self._players if p.value == sign)
+        return self._players[Color.BLACK if score > 0 else Color.WHITE]

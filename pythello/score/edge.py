@@ -20,8 +20,8 @@ class EdgeScore:
         }
 
     def __call__(self, game: Game) -> float:
-        player = game.board.players[game.value]
-        opponent = game.board.players[-game.value]
+        player = game.board.players[game.current_player]
+        opponent = game.board.players[game.current_player.opponent]
         score = 0
 
         for mask, weight in self.weighted_masks.items():
