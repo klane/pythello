@@ -67,8 +67,7 @@ class Board:
     def _captured(self, player: Color, move: Position) -> tuple[int, int, int]:
         current = self.players[player]
         opponent = self.players[player.opponent]
-        index = move[0] * self._size + move[1]
-        mv = 1 << (self._size**2 - index - 1)
+        mv = 1 << (self._size**2 - move - 1)
         captured = mv
 
         for shift, mask in zip(self._shifts, self._masks):
@@ -112,9 +111,7 @@ class Board:
             self.players[player] = current
             self.players[player.opponent] = opponent
         else:
-            row, col = piece
-            mask = 1 << (row * self._size + col)
-            self.players[player] |= mask
+            self.players[player] |= 1 << piece
 
     def player_pieces(self, player: Color) -> PositionSet:
         """Get all pieces on the board for the specified player."""
@@ -127,12 +124,13 @@ class Board:
     def reset(self) -> None:
         """Reset the board to its initial state."""
         self.players = [0, 0]
+        mid = self._size**2 // 2
         size_2 = self._size // 2
 
-        self.place_piece((size_2 - 1, size_2), Color.BLACK, False)
-        self.place_piece((size_2, size_2 - 1), Color.BLACK, False)
-        self.place_piece((size_2 - 1, size_2 - 1), Color.WHITE, False)
-        self.place_piece((size_2, size_2), Color.WHITE, False)
+        self.place_piece(mid - size_2, Color.BLACK, False)
+        self.place_piece(mid + size_2 - 1, Color.BLACK, False)
+        self.place_piece(mid - size_2 - 1, Color.WHITE, False)
+        self.place_piece(mid + size_2, Color.WHITE, False)
 
     def score(self, player: Color = Color.BLACK) -> int:
         """Return the current score of the game."""
@@ -144,7 +142,7 @@ class Board:
 
     def _translate(self, moves: int) -> PositionSet:
         s = f'{moves:b}'.zfill(self._size**2)
-        return {(i // self._size, i % self._size) for i, c in enumerate(s) if c == '1'}
+        return {i for i, c in enumerate(s) if c == '1'}
 
     def valid_moves(self, player: Color) -> PositionSet:
         """Return the set of valid moves for the specified player."""

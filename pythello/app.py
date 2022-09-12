@@ -163,14 +163,14 @@ class App:
         b = (self.size, h)
         pg.draw.line(self.graph, GRAPH_LINE_COLOR, a, b, 1)
 
-    def draw_piece(self, row: int, col: int, radius: int, color: pg.Color) -> None:
-        x, y = self.get_grid_coords(row, col)
+    def draw_piece(self, position: Position, radius: int, color: pg.Color) -> None:
+        x, y = self.get_grid_coords(position)
         self.draw_circle(self.screen, x, y, radius, color)
 
-    def draw_score_gain(self, row: int, col: int) -> None:
-        pieces_gained = len(self.game.captured((row, col)))
+    def draw_score_gain(self, position: Position) -> None:
+        pieces_gained = len(self.game.captured(position))
         textsurface = self.font.render(str(pieces_gained), True, TEXT_COLOR)
-        x, y = self.get_grid_coords(row, col)
+        x, y = self.get_grid_coords(position)
         x -= textsurface.get_width() / 2 - 1
         y -= textsurface.get_height() / 2 - 1
         self.screen.blit(textsurface, (x, y))
@@ -186,14 +186,15 @@ class App:
             elif event.type == pg.MOUSEBUTTONDOWN:
                 row = (event.pos[1] - self.menu_height) // self.grid_size
                 col = event.pos[0] // self.grid_size
-                move = row, col
+                move = row * self.game.board.size + col
 
                 if move in self.game.valid:
                     self.make_move(move)
 
             self.manager.process_events(event)
 
-    def get_grid_coords(self, row: int, col: int) -> tuple[int, int]:
+    def get_grid_coords(self, position: Position) -> tuple[int, int]:
+        row, col = position // self.game.board.size, position % self.game.board.size
         x = col * self.grid_size + self.grid_size // 2
         y = row * self.grid_size + self.grid_size // 2 + self.menu_height
         return x, y
@@ -274,19 +275,19 @@ class App:
             self.screen.blit(self.graph, (0, self.menu_height + self.size))
 
         # draw player 1 pieces
-        for row, col in self.game.board.player_pieces(Color.BLACK):
-            self.draw_piece(row, col, self.radius, PLAYER1_COLOR)
+        for position in self.game.board.player_pieces(Color.BLACK):
+            self.draw_piece(position, self.radius, PLAYER1_COLOR)
 
         # draw player 2 pieces
-        for row, col in self.game.board.player_pieces(Color.WHITE):
-            self.draw_piece(row, col, self.radius, PLAYER2_COLOR)
+        for position in self.game.board.player_pieces(Color.WHITE):
+            self.draw_piece(position, self.radius, PLAYER2_COLOR)
 
         # draw valid moves
-        for row, col in self.game.valid:
-            self.draw_piece(row, col, self.move_radius, MOVE_COLOR)
+        for position in self.game.valid:
+            self.draw_piece(position, self.move_radius, MOVE_COLOR)
 
             if self.show_gain.is_selected:
-                self.draw_score_gain(row, col)
+                self.draw_score_gain(position)
 
         self.manager.draw_ui(self.screen)
         pg.display.update()
