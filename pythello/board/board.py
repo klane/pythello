@@ -104,14 +104,11 @@ class Board:
         """Return the number of empty spaces on the board."""
         return bin(self.filled ^ self._full_mask).count('1')
 
-    def place_piece(self, piece: Position, player: Color, capture: bool = True) -> None:
+    def place_piece(self, piece: Position, player: Color) -> None:
         """Place a piece on the board for the specified player."""
-        if capture:
-            current, opponent, _ = self._captured(player, piece)
-            self.players[player] = current
-            self.players[player.opponent] = opponent
-        else:
-            self.players[player] |= 1 << piece
+        current, opponent, _ = self._captured(player, piece)
+        self.players[player] = current
+        self.players[player.opponent] = opponent
 
     def player_pieces(self, player: Color) -> PositionSet:
         """Get all pieces on the board for the specified player."""
@@ -123,14 +120,14 @@ class Board:
 
     def reset(self) -> None:
         """Reset the board to its initial state."""
-        self.players = [0, 0]
         mid = self._size**2 // 2
         size_2 = self._size // 2
 
-        self.place_piece(mid - size_2, Color.BLACK, False)
-        self.place_piece(mid + size_2 - 1, Color.BLACK, False)
-        self.place_piece(mid - size_2 - 1, Color.WHITE, False)
-        self.place_piece(mid + size_2, Color.WHITE, False)
+        self.players = [0, 0]
+        self.players[Color.BLACK] |= 1 << (mid - size_2)
+        self.players[Color.BLACK] |= 1 << (mid + size_2 - 1)
+        self.players[Color.WHITE] |= 1 << (mid - size_2 - 1)
+        self.players[Color.WHITE] |= 1 << (mid + size_2)
 
     def score(self, player: Color = Color.BLACK) -> int:
         """Return the current score of the game."""
