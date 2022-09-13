@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum, IntEnum
+from functools import partial
 from typing import TYPE_CHECKING
 
 from pythello.player.greedy import greedy_move
@@ -13,8 +14,8 @@ if TYPE_CHECKING:
 
 
 class AI(Enum):
-    RANDOM = random_move
-    GREEDY = greedy_move
+    RANDOM = partial(random_move)
+    GREEDY = partial(greedy_move)
     NEGAMAX = Negamax()
 
     def __call__(self, game: Game) -> Position:
