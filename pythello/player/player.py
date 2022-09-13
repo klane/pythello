@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import Enum, IntEnum
+from enum import Enum
 from functools import partial
 from typing import TYPE_CHECKING
 
@@ -20,12 +20,3 @@ class AI(Enum):
 
     def __call__(self, game: Game) -> Position:
         return self.value(game)
-
-
-class Color(IntEnum):
-    BLACK = 0
-    WHITE = 1
-
-    @property
-    def opponent(self) -> Color:
-        return Color(self ^ 1)
