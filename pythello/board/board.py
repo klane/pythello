@@ -67,13 +67,12 @@ class Board:
     def _captured(self, player: Color, move: Position) -> tuple[int, int, int]:
         current = self.players[player]
         opponent = self.players[player.opponent]
-        mv = 1 << (self._size**2 - move - 1)
-        captured = mv
+        captured = move
 
         for shift, mask in zip(self._shifts, self._masks):
             current_mask = mask & current
             opponent_mask = mask & opponent
-            x = shift.operator(mv, shift.nbits) & opponent_mask
+            x = shift.operator(move, shift.nbits) & opponent_mask
 
             for _ in range(self._size - 3):
                 x |= shift.operator(x, shift.nbits) & opponent_mask
@@ -138,8 +137,7 @@ class Board:
         return self._size
 
     def _translate(self, moves: int) -> PositionSet:
-        s = f'{moves:b}'.zfill(self._size**2)
-        return {i for i, c in enumerate(s) if c == '1'}
+        return {1 << i for i, c in enumerate(f'{moves:b}'[::-1]) if c == '1'}
 
     def valid_moves(self, player: Color) -> PositionSet:
         """Return the set of valid moves for the specified player."""

@@ -186,7 +186,13 @@ class App:
             elif event.type == pg.MOUSEBUTTONDOWN:
                 row = (event.pos[1] - self.menu_height) // self.grid_size
                 col = event.pos[0] // self.grid_size
-                move = row * self.game.board.size + col
+                valid_row = 0 <= row <= self.game.board.size - 1
+                valid_col = 0 <= col <= self.game.board.size - 1
+                move = (
+                    1 << row * self.game.board.size + col
+                    if valid_row and valid_col
+                    else None
+                )
 
                 if move in self.game.valid:
                     self.make_move(move)
@@ -194,7 +200,8 @@ class App:
             self.manager.process_events(event)
 
     def get_grid_coords(self, position: Position) -> tuple[int, int]:
-        row, col = position // self.game.board.size, position % self.game.board.size
+        index = f'{position:b}'[::-1].find('1')
+        row, col = index // self.game.board.size, index % self.game.board.size
         x = col * self.grid_size + self.grid_size // 2
         y = row * self.grid_size + self.grid_size // 2 + self.menu_height
         return x, y
