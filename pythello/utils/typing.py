@@ -8,7 +8,7 @@ from pythello.game import Game
 Function = Callable[..., Any]
 Predicate = Callable[..., bool]
 IntPredicate = Callable[[int], bool]
-Position = tuple[int, int]
+Position = int
 PositionSet = set[Position]
 AIPlayer = Callable[[Game], Position]
 Player = Union[AIPlayer, str]
