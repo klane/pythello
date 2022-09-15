@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING
 from pythello.board.mask import corner_mask, edge_mask, interior_mask
 
 if TYPE_CHECKING:
-    from pythello.game import Game
+    from pythello.board import Board
+    from pythello.player import Color
 
 
 class EdgeScore:
@@ -19,13 +20,13 @@ class EdgeScore:
             _interior_mask: 1,
         }
 
-    def __call__(self, game: Game) -> float:
-        player = game.board.players[game.current_player]
-        opponent = game.board.players[game.current_player.opponent]
+    def __call__(self, board: Board, player: Color) -> float:
+        current = board.players[player]
+        opponent = board.players[player.opponent]
         score = 0
 
         for mask, weight in self.weighted_masks.items():
-            player_count = bin(player & mask).count('1')
+            player_count = bin(current & mask).count('1')
             opponent_count = bin(opponent & mask).count('1')
             score += (player_count - opponent_count) * weight
 

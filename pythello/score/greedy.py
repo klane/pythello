@@ -3,8 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pythello.game import Game
+    from pythello.board import Board
+    from pythello.player import Color
 
 
-def greedy_score(game: Game) -> float:
-    return game.board.score(game.current_player)
+def greedy_score(board: Board, player: Color) -> float:
+    return board.score(player)

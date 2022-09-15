@@ -49,7 +49,7 @@ class Negamax:
         self, game: Game, depth: int, alpha: float = -INF, beta: float = INF
     ) -> float:
         if depth == 0 or game.is_over:
-            return self.score(game)
+            return self.score(game.board, game.current_player)
 
         if not game.has_move:
             children = [deepcopy(game).next_turn()]
