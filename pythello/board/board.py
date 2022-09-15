@@ -4,6 +4,7 @@ from operator import lshift, rshift
 from typing import TYPE_CHECKING, NamedTuple
 
 from pythello.board.mask import full_mask, left_mask, right_mask
+from pythello.board.position import split_position
 from pythello.player import Color
 from pythello.utils.precondition import precondition
 
@@ -87,7 +88,7 @@ class Board:
     def captured(self, player: Color, move: Position) -> PositionSet:
         """Get all pieces captured for the given move by the specified player."""
         _, _, captured = self._captured(player, move)
-        return self._translate(captured)
+        return split_position(captured)
 
     @property
     def filled(self) -> int:
@@ -111,7 +112,7 @@ class Board:
 
     def player_pieces(self, player: Color) -> PositionSet:
         """Get all pieces on the board for the specified player."""
-        return self._translate(self.players[player])
+        return split_position(self.players[player])
 
     def player_score(self, player: Color) -> int:
         """Return the number of pieces held by the specified player."""
@@ -136,9 +137,6 @@ class Board:
     def size(self) -> int:
         return self._size
 
-    def _translate(self, moves: int) -> PositionSet:
-        return {1 << i for i, c in enumerate(f'{moves:b}'[::-1]) if c == '1'}
-
     def valid_moves(self, player: Color) -> PositionSet:
         """Return the set of valid moves for the specified player."""
         current = self.players[player]
@@ -156,4 +154,4 @@ class Board:
 
             moves |= shift.operator(x, shift.nbits) & empty_mask
 
-        return self._translate(moves)
+        return split_position(moves)
