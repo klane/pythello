@@ -7,7 +7,7 @@ import pygame as pg
 import pygame_gui as pgui
 from pygame import gfxdraw
 
-from pythello.board import Board
+from pythello.board import Board, position_to_coordinates
 from pythello.game import Game
 from pythello.player import AI, Color
 
@@ -200,8 +200,7 @@ class App:
             self.manager.process_events(event)
 
     def get_grid_coords(self, position: Position) -> tuple[int, int]:
-        index = f'{position:b}'[::-1].find('1')
-        row, col = index // self.game.board.size, index % self.game.board.size
+        row, col = position_to_coordinates(position, self.game.board.size)
         x = col * self.grid_size + self.grid_size // 2
         y = row * self.grid_size + self.grid_size // 2 + self.menu_height
         return x, y
