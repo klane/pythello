@@ -7,8 +7,7 @@ from pythello.score.greedy import greedy_score
 from pythello.score.weighted import WeightedScore
 
 if TYPE_CHECKING:
-    from pythello.board import Board
-    from pythello.player import Color
+    from pythello.board import Board, Color
     from pythello.utils.typing import Scorer
 
 

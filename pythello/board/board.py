@@ -4,8 +4,8 @@ from operator import lshift, rshift
 from typing import TYPE_CHECKING, NamedTuple
 
 from pythello.board import mask as board_mask
+from pythello.board.color import Color
 from pythello.board.position import split_position
-from pythello.player import Color
 from pythello.utils.precondition import precondition
 
 if TYPE_CHECKING:

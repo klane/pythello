@@ -5,8 +5,7 @@ from typing import TYPE_CHECKING
 from pythello.board.mask import corner_mask, edge_mask, interior_mask
 
 if TYPE_CHECKING:
-    from pythello.board import Board
-    from pythello.player import Color
+    from pythello.board import Board, Color
 
 
 class EdgeScore:

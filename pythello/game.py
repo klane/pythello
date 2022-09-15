@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from pythello.player import Color
+from pythello.board import Color
 
 if TYPE_CHECKING:
     from pythello.board import Board
