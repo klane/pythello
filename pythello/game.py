@@ -77,6 +77,11 @@ class Game:
         self._valid = self._board.valid_moves(self._current_player)
         return self
 
+    def peek(self, move: Position) -> Board:
+        board = self._board.copy()
+        board.place_piece(move, self._current_player)
+        return board
+
     @property
     def player(self) -> Player:
         return self._players[self._current_player]
