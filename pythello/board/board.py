@@ -11,9 +11,11 @@ from pythello.utils.precondition import precondition
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from pythello.utils.typing import IntPredicate, Position, PositionSet
+    from pythello.utils.typing import Position, PositionSet
 
-SIZE_POSITIVE_EVEN: IntPredicate = lambda size: size > 0 and size % 2 == 0
+
+def size_positive_even(size: int) -> bool:
+    return size > 0 and size % 2 == 0
 
 
 class Shift(NamedTuple):
@@ -21,7 +23,7 @@ class Shift(NamedTuple):
     bits: int
 
 
-@precondition(SIZE_POSITIVE_EVEN, 'Board size must be a positive even integer')
+@precondition(size_positive_even, 'Board size must be a positive even integer')
 class Board:
     def __init__(self, size: int = 8) -> None:
         self._size = size

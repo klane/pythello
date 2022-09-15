@@ -9,7 +9,6 @@ T = TypeVar('T')
 
 Function = Callable[..., T]
 Predicate = Function[bool]
-IntPredicate = Callable[[int], bool]
 Position = int
 PositionSet = set[Position]
 AIPlayer = Callable[[Game], Position]
