@@ -4,8 +4,10 @@ from enum import Enum
 from typing import TYPE_CHECKING
 
 from pythello.player.greedy import greedy_move
+from pythello.player.heuristic import Heuristic
 from pythello.player.negamax import Negamax
 from pythello.player.random import random_move
+from pythello.score import Score
 
 if TYPE_CHECKING:
     from pythello.game import Game
@@ -23,4 +25,5 @@ class PlayerWrapper:
 class AI(PlayerWrapper, Enum):
     RANDOM = PlayerWrapper(random_move)
     GREEDY = PlayerWrapper(greedy_move)
-    NEGAMAX = PlayerWrapper(Negamax())
+    EDGE = Heuristic(Score.EDGE)
+    NEGAMAX = Negamax()
