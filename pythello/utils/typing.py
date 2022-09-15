@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any, Union
+from typing import TypeVar, Union
 
 from pythello.game import Game
 
-Function = Callable[..., Any]
-Predicate = Callable[..., bool]
+T = TypeVar('T')
+
+Function = Callable[..., T]
+Predicate = Function[bool]
 IntPredicate = Callable[[int], bool]
 Position = int
 PositionSet = set[Position]

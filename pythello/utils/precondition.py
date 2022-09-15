@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import inspect
-from typing import TYPE_CHECKING, Any, NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple, TypeVar
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from pythello.utils.typing import Function, Predicate
+
+T = TypeVar('T')
 
 
 class Condition(NamedTuple):
@@ -15,11 +17,13 @@ class Condition(NamedTuple):
 
 
 class FunctionWrapper:
-    def __init__(self, function: Function, condition: Predicate, message: str) -> None:
+    def __init__(
+        self, function: Function[T], condition: Predicate, message: str
+    ) -> None:
         self._function = function
         self._condition = Condition(condition, message)
 
-    def __call__(self, *args: tuple[Any], **kwargs: dict[str, Any]) -> Any:
+    def __call__(self, *args: tuple[Any], **kwargs: dict[str, Any]) -> T:
         function = self._function
         conditions = {self._condition}
 
@@ -42,8 +46,10 @@ class FunctionWrapper:
         return function(*args, **kwargs)
 
 
-def precondition(condition: Predicate, message: str) -> Callable[[Function], Function]:
-    def decorator(function: Function) -> Function:
+def precondition(
+    condition: Predicate, message: str
+) -> Callable[[Function[T]], Function[T]]:
+    def decorator(function: Function[T]) -> Function[T]:
         return FunctionWrapper(function, condition, message)
 
     return decorator
