@@ -90,6 +90,11 @@ class Board:
         _, _, captured = self._captured(player, move)
         return split_position(captured)
 
+    def copy(self) -> Board:
+        board = Board(self._size)
+        board.players = self.players.copy()
+        return board
+
     @property
     def filled(self) -> int:
         return self.players[Color.BLACK] | self.players[Color.WHITE]
