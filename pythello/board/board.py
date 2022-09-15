@@ -17,7 +17,7 @@ SIZE_POSITIVE_EVEN: IntPredicate = lambda size: size > 0 and size % 2 == 0
 
 class Shift(NamedTuple):
     operator: Callable[[int, int], int]
-    nbits: int
+    bits: int
 
 
 @precondition(SIZE_POSITIVE_EVEN, 'Board size must be a positive even integer')
@@ -72,12 +72,12 @@ class Board:
         for shift, mask in zip(self._shifts, self._masks):
             current_mask = mask & current
             opponent_mask = mask & opponent
-            x = shift.operator(move, shift.nbits) & opponent_mask
+            x = shift.operator(move, shift.bits) & opponent_mask
 
             for _ in range(self._size - 3):
-                x |= shift.operator(x, shift.nbits) & opponent_mask
+                x |= shift.operator(x, shift.bits) & opponent_mask
 
-            if (shift.operator(x, shift.nbits) & current_mask) != 0:
+            if (shift.operator(x, shift.bits) & current_mask) != 0:
                 captured |= x
 
         current |= captured
@@ -149,11 +149,11 @@ class Board:
         for shift, mask in zip(self._shifts, self._masks):
             opponent_mask = mask & opponent
             empty_mask = mask & empty
-            x = shift.operator(current, shift.nbits) & opponent_mask
+            x = shift.operator(current, shift.bits) & opponent_mask
 
             for _ in range(self._size - 3):
-                x |= shift.operator(x, shift.nbits) & opponent_mask
+                x |= shift.operator(x, shift.bits) & opponent_mask
 
-            moves |= shift.operator(x, shift.nbits) & empty_mask
+            moves |= shift.operator(x, shift.bits) & empty_mask
 
         return self._translate(moves)
