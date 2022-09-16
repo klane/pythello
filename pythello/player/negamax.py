@@ -10,7 +10,7 @@ from pythello.score import greedy_score
 
 if TYPE_CHECKING:
     from pythello.game import Game
-    from pythello.utils.typing import Position, Scorer
+    from pythello.typing import Position, Scorer
 
 CPU_COUNT = cpu_count()
 INF = float('inf')

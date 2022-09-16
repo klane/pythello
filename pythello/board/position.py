@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pythello.utils.typing import Position, PositionSet
+    from pythello.typing import Position, PositionSet
 
 
 def position_to_coordinates(position: Position, size: int) -> tuple[int, int]:

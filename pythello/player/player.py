@@ -9,7 +9,7 @@ from pythello.player.random import random_move
 
 if TYPE_CHECKING:
     from pythello.game import Game
-    from pythello.utils.typing import AIPlayer, Position
+    from pythello.typing import AIPlayer, Position
 
 
 class PlayerWrapper:

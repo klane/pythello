@@ -6,7 +6,7 @@ from pythello.player import Color
 
 if TYPE_CHECKING:
     from pythello.board import Board
-    from pythello.utils.typing import Player, Position, PositionSet
+    from pythello.typing import Player, Position, PositionSet
 
 
 class Game:
