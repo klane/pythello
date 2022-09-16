@@ -7,7 +7,6 @@ from multiprocessing import Pool, cpu_count
 from typing import TYPE_CHECKING
 
 from pythello.score import greedy_score
-from pythello.utils.precondition import precondition
 
 if TYPE_CHECKING:
     from pythello.game import Game
@@ -17,20 +16,16 @@ CPU_COUNT = cpu_count()
 INF = float('inf')
 
 
-def depth_positive(depth: int) -> bool:
-    return depth > 0
-
-
-def processes_in_range(processes: int) -> bool:
-    return 1 <= processes <= CPU_COUNT
-
-
-@precondition(depth_positive, 'Depth must be strictly positive')
-@precondition(processes_in_range, f'Processes must be between 1 and {CPU_COUNT}')
 class Negamax:
     def __init__(
         self, depth: int = 4, processes: int = CPU_COUNT, score: Scorer = greedy_score
     ) -> None:
+        if depth <= 0:
+            raise ValueError('Depth must be strictly positive')
+
+        if not 1 <= processes <= CPU_COUNT:
+            raise ValueError(f'Processes must be between 1 and {CPU_COUNT}')
+
         self.depth = depth
         self.score = score
         self.processes = processes
