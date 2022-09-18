@@ -1,15 +1,13 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from enum import Enum
-from typing import TYPE_CHECKING
 
-from pythello.board import Board
+from pythello.board import Board, Color
 from pythello.score.greedy import greedy_score
 from pythello.score.weighted import WeightedScore
 
-if TYPE_CHECKING:
-    from pythello.board import Color
-    from pythello.utils.typing import Scorer
+Scorer = Callable[[Board, Color], float]
 
 
 class ScorerWrapper:
