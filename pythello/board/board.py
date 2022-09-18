@@ -6,14 +6,11 @@ from typing import TYPE_CHECKING, NamedTuple
 from pythello.board.mask import full_mask, left_mask, right_mask
 from pythello.board.position import split_position
 from pythello.player import Color
-from pythello.utils.precondition import precondition
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from pythello.utils.typing import IntPredicate, Position, PositionSet
-
-SIZE_POSITIVE_EVEN: IntPredicate = lambda size: size > 0 and size % 2 == 0
+    from pythello.board.position import Position, PositionSet
 
 
 class Shift(NamedTuple):
@@ -21,9 +18,11 @@ class Shift(NamedTuple):
     bits: int
 
 
-@precondition(SIZE_POSITIVE_EVEN, 'Board size must be a positive even integer')
 class Board:
     def __init__(self, size: int = 8) -> None:
+        if size <= 0 or size % 2 != 0:
+            raise ValueError('Board size must be a positive even integer')
+
         self._size = size
         self.players: list[int] = []
 

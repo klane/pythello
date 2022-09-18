@@ -12,7 +12,8 @@ from pythello.game import Game
 from pythello.player import AI, Color
 
 if TYPE_CHECKING:
-    from pythello.utils.typing import Player, Position
+    from pythello.board import Position
+    from pythello.player import Player
 
 CAPTION = 'Pythello'
 PLAYER1_COLOR = pg.Color('black')

@@ -1,15 +1,17 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import Union
 
+from pythello.board import Position
+from pythello.game import Game
 from pythello.player.greedy import greedy_move
 from pythello.player.negamax import Negamax
 from pythello.player.random import random_move
 
-if TYPE_CHECKING:
-    from pythello.game import Game
-    from pythello.utils.typing import AIPlayer, Position
+AIPlayer = Callable[[Game], Position]
+Player = Union[AIPlayer, str]
 
 
 class PlayerWrapper:
