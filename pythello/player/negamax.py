@@ -9,8 +9,9 @@ from typing import TYPE_CHECKING
 from pythello.score import greedy_score
 
 if TYPE_CHECKING:
+    from pythello.board import Position
     from pythello.game import Game
-    from pythello.typing import Position, Scorer
+    from pythello.score import Scorer
 
 CPU_COUNT = cpu_count()
 INF = float('inf')

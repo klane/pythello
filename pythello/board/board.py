@@ -10,7 +10,7 @@ from pythello.player import Color
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from pythello.typing import Position, PositionSet
+    from pythello.board.position import Position, PositionSet
 
 
 class Shift(NamedTuple):
