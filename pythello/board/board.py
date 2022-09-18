@@ -3,9 +3,9 @@ from __future__ import annotations
 from operator import lshift, rshift
 from typing import TYPE_CHECKING, NamedTuple
 
-from pythello.board.mask import full_mask, left_mask, right_mask
+from pythello.board import mask as board_mask
+from pythello.board.color import Color
 from pythello.board.position import split_position
-from pythello.player import Color
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -26,19 +26,22 @@ class Board:
         self._size = size
         self.players: list[int] = []
 
-        _right_mask = right_mask(size)
-        _left_mask = left_mask(size)
-        self._full_mask = full_mask(size)
+        right_mask = board_mask.right_mask(size)
+        left_mask = board_mask.left_mask(size)
+        self._corner_mask = board_mask.corner_mask(size)
+        self._edge_mask = board_mask.edge_mask(size, remove_corners=True)
+        self._full_mask = board_mask.full_mask(size)
+        self._interior_mask = board_mask.interior_mask(size)
 
         self._masks = (
-            _right_mask,  # right
-            _right_mask >> size,  # down + right
+            right_mask,  # right
+            right_mask >> size,  # down + right
             self._full_mask,  # down
-            _left_mask >> size,  # down + left
-            _left_mask,  # left
-            (_left_mask << size) & self._full_mask,  # up + left
+            left_mask >> size,  # down + left
+            left_mask,  # left
+            (left_mask << size) & self._full_mask,  # up + left
             self._full_mask,  # up
-            (_right_mask << size) & self._full_mask,  # up + right
+            (right_mask << size) & self._full_mask,  # up + right
         )
 
         self._shifts = (
@@ -89,6 +92,11 @@ class Board:
         _, _, captured = self._captured(player, move)
         return split_position(captured)
 
+    def copy(self) -> Board:
+        board = Board(self._size)
+        board.players = self.players.copy()
+        return board
+
     @property
     def filled(self) -> int:
         return self.players[Color.BLACK] | self.players[Color.WHITE]
@@ -108,6 +116,28 @@ class Board:
         current, opponent, _ = self._captured(player, piece)
         self.players[player] = current
         self.players[player.opponent] = opponent
+
+    def player_corners(self, player: Color) -> int:
+        return bin(self.players[player] & self._corner_mask).count('1')
+
+    def player_edges(self, player: Color) -> int:
+        return bin(self.players[player] & self._edge_mask).count('1')
+
+    def player_frontier(self, player: Color) -> int:
+        current = self.players[player]
+        opponent = self.players[player.opponent]
+        empty = (current | opponent) ^ self._full_mask
+        frontier = 0
+
+        for shift, mask in zip(self._shifts, self._masks):
+            x = shift.operator(empty, shift.bits) & mask
+            frontier |= x & current
+
+        frontier &= ~self._corner_mask
+        return bin(frontier).count('1')
+
+    def player_interior(self, player: Color) -> int:
+        return bin(self.players[player] & self._interior_mask).count('1')
 
     def player_pieces(self, player: Color) -> PositionSet:
         """Get all pieces on the board for the specified player."""

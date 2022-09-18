@@ -7,9 +7,9 @@ import pygame as pg
 import pygame_gui as pgui
 from pygame import gfxdraw
 
-from pythello.board import Board, position_to_coordinates
+from pythello.board import Board, Color, position_to_coordinates
 from pythello.game import Game
-from pythello.player import AI, Color
+from pythello.player import AI
 
 if TYPE_CHECKING:
     from pythello.board import Position

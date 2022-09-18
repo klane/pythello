@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from pythello.player import Color
+from pythello.board import Color
 
 if TYPE_CHECKING:
     from pythello.board import Board, Position, PositionSet
@@ -76,6 +76,11 @@ class Game:
         self._current_player = self._current_player.opponent
         self._valid = self._board.valid_moves(self._current_player)
         return self
+
+    def peek(self, move: Position) -> Board:
+        board = self._board.copy()
+        board.place_piece(move, self._current_player)
+        return board
 
     @property
     def player(self) -> Player:

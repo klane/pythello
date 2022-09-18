@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from collections.abc import Callable
 from enum import Enum
 from typing import Union
@@ -7,8 +8,9 @@ from typing import Union
 from pythello.board import Position
 from pythello.game import Game
 from pythello.player.greedy import greedy_move
+from pythello.player.heuristic import Heuristic
 from pythello.player.negamax import Negamax
-from pythello.player.random import random_move
+from pythello.score import Score
 
 AIPlayer = Callable[[Game], Position]
 Player = Union[AIPlayer, str]
@@ -23,6 +25,8 @@ class PlayerWrapper:
 
 
 class AI(PlayerWrapper, Enum):
-    RANDOM = PlayerWrapper(random_move)
+    RANDOM = PlayerWrapper(lambda game: random.choice(list(game.valid)))
     GREEDY = PlayerWrapper(greedy_move)
-    NEGAMAX = PlayerWrapper(Negamax())
+    EDGE = Heuristic(Score.EDGE)
+    BALANCED = Heuristic(Score.BALANCED)
+    NEGAMAX = Negamax()
