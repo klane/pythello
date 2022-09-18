@@ -4,7 +4,6 @@ from collections.abc import Callable
 from enum import Enum
 
 from pythello.board import Board, Color
-from pythello.score.greedy import greedy_score
 from pythello.score.weighted import WeightedScore
 
 Scorer = Callable[[Board, Color], float]
@@ -19,7 +18,7 @@ class ScorerWrapper:
 
 
 class Score(ScorerWrapper, Enum):
-    GREEDY = ScorerWrapper(greedy_score)
+    GREEDY = ScorerWrapper(lambda board, player: board.score(player))
     EDGE = WeightedScore(
         {
             Board.player_corners: 16,

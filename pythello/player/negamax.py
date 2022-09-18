@@ -6,7 +6,7 @@ from functools import partial
 from multiprocessing import Pool, cpu_count
 from typing import TYPE_CHECKING
 
-from pythello.score import greedy_score
+from pythello.score import Score
 
 if TYPE_CHECKING:
     from pythello.board import Position
@@ -19,7 +19,7 @@ INF = float('inf')
 
 class Negamax:
     def __init__(
-        self, depth: int = 4, processes: int = CPU_COUNT, score: Scorer = greedy_score
+        self, depth: int = 4, processes: int = CPU_COUNT, score: Scorer = Score.GREEDY
     ) -> None:
         if depth <= 0:
             raise ValueError('Depth must be strictly positive')
