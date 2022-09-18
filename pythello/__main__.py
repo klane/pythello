@@ -13,7 +13,7 @@ from pythello.game import Game
 from pythello.player import AI
 
 if TYPE_CHECKING:
-    from pythello.utils.typing import Player
+    from pythello.player import Player
 
 app = True
 app_size = 600
