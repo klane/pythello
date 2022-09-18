@@ -21,6 +21,13 @@ class Score(ScorerWrapper, Enum):
     GREEDY = ScorerWrapper(lambda board, player: board.score(player))
     EDGE = WeightedScore(
         {
+            Board.player_corners: 9,
+            Board.player_edges: 3,
+            Board.player_interior: 1,
+        }
+    )
+    BALANCED = WeightedScore(
+        {
             Board.player_corners: 16,
             Board.player_edges: 4,
             lambda board, player: len(board.valid_moves(player)): 2,
