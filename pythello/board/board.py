@@ -109,7 +109,7 @@ class Board:
     @property
     def num_empty(self) -> int:
         """Return the number of empty spaces on the board."""
-        return bin(self.filled ^ self._full_mask).count('1')
+        return (self.filled ^ self._full_mask).bit_count()
 
     def peek(self, move: Position, player: Color) -> Board:
         board = self.copy()
@@ -123,10 +123,10 @@ class Board:
         self.players[player.opponent] = opponent
 
     def player_corners(self, player: Color) -> int:
-        return bin(self.players[player] & self._corner_mask).count('1')
+        return (self.players[player] & self._corner_mask).bit_count()
 
     def player_edges(self, player: Color) -> int:
-        return bin(self.players[player] & self._edge_mask).count('1')
+        return (self.players[player] & self._edge_mask).bit_count()
 
     def player_frontier(self, player: Color) -> int:
         current = self.players[player]
@@ -139,10 +139,10 @@ class Board:
             frontier |= x & current
 
         frontier &= ~self._corner_mask
-        return bin(frontier).count('1')
+        return frontier.bit_count()
 
     def player_interior(self, player: Color) -> int:
-        return bin(self.players[player] & self._interior_mask).count('1')
+        return (self.players[player] & self._interior_mask).bit_count()
 
     def player_pieces(self, player: Color) -> PositionSet:
         """Get all pieces on the board for the specified player."""
@@ -150,7 +150,7 @@ class Board:
 
     def player_score(self, player: Color) -> int:
         """Return the number of pieces held by the specified player."""
-        return bin(self.players[player]).count('1')
+        return self.players[player].bit_count()
 
     def reset(self) -> None:
         """Reset the board to its initial state."""
