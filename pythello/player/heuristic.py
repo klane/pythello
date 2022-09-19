@@ -16,9 +16,10 @@ class Heuristic:
 
     def __call__(self, game: Game) -> Position:
         scores = defaultdict(list)
+        player = game.current_player
 
         for move in game.valid:
-            board = game.peek(move)
-            scores[self.scorer(board, game.current_player)].append(move)
+            board = game.board.peek(move, player)
+            scores[self.scorer(board, player)].append(move)
 
         return random.choice(scores[max(scores.keys())])
