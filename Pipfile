@@ -6,8 +6,8 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-pygame = "==2.0.0.dev6"
+pygame = "*"
 pygame-gui = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.10"
