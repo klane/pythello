@@ -111,6 +111,11 @@ class Board:
         """Return the number of empty spaces on the board."""
         return bin(self.filled ^ self._full_mask).count('1')
 
+    def peek(self, move: Position, player: Color) -> Board:
+        board = self.copy()
+        board.place_piece(move, player)
+        return board
+
     def place_piece(self, piece: Position, player: Color) -> None:
         """Place a piece on the board for the specified player."""
         current, opponent, _ = self._captured(player, piece)
