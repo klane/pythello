@@ -3,7 +3,6 @@ from __future__ import annotations
 import random
 from collections.abc import Callable
 from enum import Enum
-from typing import Union
 
 from pythello.board import Position
 from pythello.game import Game
@@ -13,7 +12,7 @@ from pythello.player.negamax import Negamax
 from pythello.score import Score
 
 AIPlayer = Callable[[Game], Position]
-Player = Union[AIPlayer, str]
+Player = str | AIPlayer
 
 
 class PlayerWrapper:
