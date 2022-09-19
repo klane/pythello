@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import random
-from copy import deepcopy
 from functools import partial
 from multiprocessing import Pool, cpu_count
 from typing import TYPE_CHECKING
@@ -9,18 +8,16 @@ from typing import TYPE_CHECKING
 from pythello.score import Score
 
 if TYPE_CHECKING:
-    from pythello.board import Position
+    from pythello.board import Board, Color, Position
     from pythello.game import Game
-    from pythello.score import Scorer
 
 CPU_COUNT = cpu_count()
 INF = float('inf')
+SCORER = Score.BALANCED
 
 
 class Negamax:
-    def __init__(
-        self, depth: int = 4, processes: int = CPU_COUNT, score: Scorer = Score.GREEDY
-    ) -> None:
+    def __init__(self, depth: int = 4, processes: int = CPU_COUNT) -> None:
         if depth <= 0:
             raise ValueError('Depth must be strictly positive')
 
@@ -28,40 +25,51 @@ class Negamax:
             raise ValueError(f'Processes must be between 1 and {CPU_COUNT}')
 
         self.depth = depth
-        self.score = score
         self.processes = processes
 
     def __call__(self, game: Game) -> Position:
+        player = game.current_player
+        opponent = player.opponent
+        valid_moves = list(game.valid)
+        boards = [game.board.peek(move, player) for move in valid_moves]
+        func = partial(negamax, player=player, opponent=opponent, depth=self.depth - 1)
+
         if self.processes > 1:
             with Pool(self.processes) as pool:
-                scores = pool.map(partial(self.negamax_root, game=game), game.valid)
+                scores = pool.map(func, boards)
         else:
-            scores = [self.negamax_root(move, game) for move in game.valid]
+            scores = [func(board) for board in boards]
 
         index = random.choice([i for i, s in enumerate(scores) if s == max(scores)])
-        return list(game.valid)[index]
+        return valid_moves[index]
 
-    def negamax_root(self, move: Position, game: Game) -> float:
-        return -self.negamax(deepcopy(game).move(move), self.depth - 1)
 
-    def negamax(
-        self, game: Game, depth: int, alpha: float = -INF, beta: float = INF
-    ) -> float:
-        if depth == 0 or game.is_over:
-            return self.score(game.board, game.current_player)
+def negamax(
+    board: Board,
+    player: Color,
+    opponent: Color,
+    depth: int,
+    alpha: float = -INF,
+    beta: float = INF,
+) -> float:
+    player_moves = board.valid_moves(player)
+    opponent_moves = board.valid_moves(opponent)
 
-        if not game.has_move:
-            children = [deepcopy(game).next_turn()]
-        else:
-            children = [deepcopy(game).move(move) for move in game.valid]
+    if len(player_moves) == 0 and len(opponent_moves) > 0:
+        return -negamax(board, opponent, player, depth, -beta, -alpha)
 
-        score = -INF
+    if depth == 0 or (len(player_moves) == 0 and len(opponent_moves) == 0):
+        return SCORER(board, player)
 
-        for child in children:
-            score = max(score, -self.negamax(child, depth - 1, -beta, -alpha))
-            alpha = max(alpha, score)
+    best = -INF
 
-            if alpha >= beta:
-                break
+    for move in player_moves:
+        board = board.peek(move, player)
+        score = -negamax(board, opponent, player, depth - 1, -beta, -alpha)
+        best = max(best, score)
+        alpha = max(alpha, score)
 
-        return score
+        if alpha >= beta:
+            break
+
+    return best
