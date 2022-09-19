@@ -52,8 +52,8 @@ def negamax(
     best_score = -INF
 
     for move in player_moves:
-        board = board.peek(move, player)
-        _, score = negamax(board, opponent, scorer, depth - 1, -beta, -alpha)
+        child = board.peek(move, player)
+        _, score = negamax(child, opponent, scorer, depth - 1, -beta, -alpha)
         score *= -1
 
         if score > best_score:
