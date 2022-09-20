@@ -51,18 +51,18 @@ def negamax(
     beta: float = INF,
 ) -> float:
     alpha_orig = alpha
-    entry = cache.get((board, player))
+    node = cache.get((board, player))
 
-    if entry is not None and entry.depth >= depth:
-        if entry.flag is TreeFlag.EXACT:
-            return entry.score
-        elif entry.flag is TreeFlag.LOWER:
-            alpha = max(alpha, entry.score)
-        elif entry.flag is TreeFlag.UPPER:
-            beta = min(beta, entry.score)
+    if node is not None and node.depth >= depth:
+        if node.flag is TreeFlag.EXACT:
+            return node.score
+        elif node.flag is TreeFlag.LOWER:
+            alpha = max(alpha, node.score)
+        elif node.flag is TreeFlag.UPPER:
+            beta = min(beta, node.score)
 
         if alpha >= beta:
-            return entry.score
+            return node.score
 
     opponent = player.opponent
     player_moves = board.valid_moves(player)
