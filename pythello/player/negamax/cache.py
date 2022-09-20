@@ -16,12 +16,12 @@ class LRUCache(MutableMapping[KT, VT], Generic[KT, VT]):
     def __delitem__(self, key: KT) -> None:
         self._cache.__delitem__(key)
 
-    def __iter__(self) -> Iterator[KT]:
-        return self._cache.__iter__()
-
     def __getitem__(self, key: KT) -> VT:
         self._cache.move_to_end(key, last=True)
         return self._cache[key]
+
+    def __iter__(self) -> Iterator[KT]:
+        return self._cache.__iter__()
 
     def __len__(self) -> int:
         return len(self._cache)
