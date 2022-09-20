@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from enum import Enum
+from typing import TYPE_CHECKING, NamedTuple
 
 if TYPE_CHECKING:
     from pythello.board import Board, Color, Position
@@ -8,6 +9,20 @@ if TYPE_CHECKING:
     from pythello.score import Scorer
 
 INF = float('inf')
+TRANSPOSITION_TABLE: dict[tuple[Board, Color], TreeNode] = {}
+
+
+class TreeFlag(Enum):
+    LOWER = 1
+    EXACT = 2
+    UPPER = 3
+
+
+class TreeNode(NamedTuple):
+    move: Position
+    score: float
+    depth: int
+    flag: TreeFlag
 
 
 class Negamax:
@@ -19,14 +34,9 @@ class Negamax:
         self.depth = depth
 
     def __call__(self, game: Game) -> Position:
-        best_move, _ = negamax(
-            board=game.board,
-            player=game.current_player,
-            scorer=self.scorer,
-            depth=self.depth,
-        )
-
-        return best_move
+        board, player = game.board, game.current_player
+        negamax(board, player, self.scorer, self.depth)
+        return TRANSPOSITION_TABLE[(board, player)].move
 
 
 def negamax(
@@ -36,25 +46,37 @@ def negamax(
     depth: int,
     alpha: float = -INF,
     beta: float = INF,
-) -> tuple[Position, float]:
+) -> float:
+    alpha_orig = alpha
+    entry = TRANSPOSITION_TABLE.get((board, player))
+
+    if entry is not None and entry.depth >= depth:
+        if entry.flag is TreeFlag.EXACT:
+            return entry.score
+        elif entry.flag is TreeFlag.LOWER:
+            alpha = max(alpha, entry.score)
+        elif entry.flag is TreeFlag.UPPER:
+            beta = min(beta, entry.score)
+
+        if alpha >= beta:
+            return entry.score
+
     opponent = player.opponent
     player_moves = board.valid_moves(player)
     opponent_moves = board.valid_moves(opponent)
 
     if len(player_moves) == 0 and len(opponent_moves) > 0:
-        _, score = negamax(board, opponent, scorer, depth, -beta, -alpha)
-        return None, -score
+        return -negamax(board, opponent, scorer, depth, -beta, -alpha)
 
     if depth == 0 or (len(player_moves) == 0 and len(opponent_moves) == 0):
-        return None, scorer(board, player)
+        return scorer(board, player)
 
-    best_move = None
+    best_move = -1
     best_score = -INF
 
     for move in player_moves:
         child = board.peek(move, player)
-        _, score = negamax(child, opponent, scorer, depth - 1, -beta, -alpha)
-        score *= -1
+        score = -negamax(child, opponent, scorer, depth - 1, -beta, -alpha)
 
         if score > best_score:
             best_move = move
@@ -64,4 +86,12 @@ def negamax(
             if alpha >= beta:
                 break
 
-    return best_move, best_score
+    if best_score <= alpha_orig:
+        flag = TreeFlag.UPPER
+    elif best_score >= beta:
+        flag = TreeFlag.LOWER
+    else:
+        flag = TreeFlag.EXACT
+
+    TRANSPOSITION_TABLE[(board, player)] = TreeNode(best_move, best_score, depth, flag)
+    return best_score
