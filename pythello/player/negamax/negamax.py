@@ -1,63 +1,19 @@
 from __future__ import annotations
 
-from collections import OrderedDict
-from collections.abc import Iterator, MutableMapping
-from enum import Enum
-from typing import TYPE_CHECKING, Generic, NamedTuple, TypeVar
+from collections.abc import MutableMapping
+from typing import TYPE_CHECKING
+
+from .cache import LRUCache
+from .tree import TreeFlag, TreeNode
 
 if TYPE_CHECKING:
     from pythello.board import Board, Color, Position
     from pythello.game import Game
     from pythello.score import Scorer
 
-INF = float('inf')
-KT = TypeVar('KT')
-VT = TypeVar('VT')
-
-
-class LRUCache(MutableMapping[KT, VT], Generic[KT, VT]):
-    def __init__(self, capacity: int) -> None:
-        self._cache = OrderedDict[KT, VT]()
-        self._capacity = capacity
-
-    def __delitem__(self, key: KT) -> None:
-        self._cache.__delitem__(key)
-
-    def __iter__(self) -> Iterator[KT]:
-        return self._cache.__iter__()
-
-    def __getitem__(self, key: KT) -> VT:
-        self._cache.move_to_end(key, last=True)
-        return self._cache[key]
-
-    def __len__(self) -> int:
-        return len(self._cache)
-
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({list(self._cache.items())})'
-
-    def __setitem__(self, key: KT, value: VT) -> None:
-        self._cache[key] = value
-
-        if len(self._cache) > self._capacity:
-            self._cache.popitem(last=False)
-
-
-class TreeFlag(Enum):
-    LOWER = 1
-    EXACT = 2
-    UPPER = 3
-
-
-class TreeNode(NamedTuple):
-    move: Position
-    score: float
-    depth: int
-    flag: TreeFlag
-
-
-if TYPE_CHECKING:
     TranspositionTable = MutableMapping[tuple[Board, Color], TreeNode]
+
+INF = float('inf')
 
 
 class Negamax:
