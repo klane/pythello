@@ -13,12 +13,13 @@ if TYPE_CHECKING:
 
     TranspositionTable = MutableMapping[tuple[Board, Color], TreeNode]
 
+DEFAULT_DEPTH = 4
 INF = float('inf')
 
 
 class Negamax:
     def __init__(
-        self, scorer: Scorer, depth: int = 4, cache_size: int | None = None
+        self, scorer: Scorer, depth: int = DEFAULT_DEPTH, cache_size: int | None = None
     ) -> None:
         if depth <= 0:
             raise ValueError('Depth must be strictly positive')

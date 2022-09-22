@@ -12,6 +12,8 @@ if TYPE_CHECKING:
 
     from pythello.board.position import Position, PositionSet
 
+DEFAULT_SIZE = 8
+
 
 class Shift(NamedTuple):
     operator: Callable[[int, int], int]
@@ -19,7 +21,7 @@ class Shift(NamedTuple):
 
 
 class Board:
-    def __init__(self, size: int = 8) -> None:
+    def __init__(self, size: int = DEFAULT_SIZE) -> None:
         if size <= 0 or size % 2 != 0:
             raise ValueError('Board size must be a positive even integer')
 
