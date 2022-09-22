@@ -65,7 +65,7 @@ class Board:
 
     def __hash__(self) -> int:
         """Get board hash code"""
-        return hash(self.players)
+        return hash(tuple(self.players))
 
     def _captured(self, player: Color, move: Position) -> tuple[int, int, int]:
         current = self.players[player]

@@ -28,4 +28,4 @@ class AI(PlayerWrapper, Enum):
     GREEDY = PlayerWrapper(greedy_move)
     EDGE = Heuristic(Score.EDGE)
     BALANCED = Heuristic(Score.BALANCED)
-    NEGAMAX = Negamax()
+    NEGAMAX = Negamax(Score.BALANCED)
