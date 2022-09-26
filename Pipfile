@@ -10,6 +10,7 @@ pygame = "*"
 pygame-gui = "*"
 ray = {extras = ["rllib"], version = "*"}
 torch = "*"
+tensorboard = "*"
 
 [requires]
 python_version = "3.10"
