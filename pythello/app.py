@@ -28,7 +28,7 @@ TEXT_COLOR = pg.Color('black')
 
 class App:
     def __init__(self, size: int) -> None:
-        self.game = Game('Player 1', 'Player 2', Board())
+        self.game = Game(Board())
         self.size = size
         self.menu_height = 25
         self.graph_height = 100
@@ -135,7 +135,7 @@ class App:
             change = True
 
         if change:
-            self.game = Game(player1, player2, board)
+            self.game = Game(board, player1, player2)
             self.size_label.set_text(f'Size: {board.size}')
             self.paused = True
             self.reset()

@@ -11,11 +11,15 @@ if TYPE_CHECKING:
 
 class Game:
     def __init__(
-        self, player1: Player, player2: Player, board: Board, verbose: bool = False
+        self,
+        board: Board,
+        player1: Player = 'Player 1',
+        player2: Player = 'Player 2',
+        verbose: bool = False,
     ) -> None:
+        self._board = board
         self._players = (player1, player2)
         self._current_player = Color.BLACK
-        self._board = board
         self._verbose = verbose
         self._valid = self._board.valid_moves(self._current_player)
         self._score = [0]

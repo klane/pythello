@@ -32,7 +32,7 @@ if __name__ == '__main__':
         sys.exit()
     else:
         board = Board(game_size)
-        game = Game(player1, player2, board, verbose)
+        game = Game(board, player1, player2, verbose)
         results: dict[Player | None, int] = defaultdict(int)
         start_time = time.time()
 
