@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from enum import Enum
 from typing import TYPE_CHECKING
 
 from pythello.board import Color
@@ -7,6 +8,12 @@ from pythello.board import Color
 if TYPE_CHECKING:
     from pythello.board import Board, Position, PositionSet
     from pythello.player import Player
+
+
+class Result(Enum):
+    WIN = 1
+    LOSS = 2
+    DRAW = 3
 
 
 class Game:
@@ -112,6 +119,17 @@ class Game:
         self._score = [0]
         self._valid = self._board.valid_moves(self._current_player)
         return self
+
+    def result(self, player: Color) -> Result | None:
+        if not self.is_over:
+            return None
+
+        winner = self.winner
+
+        if winner is None:
+            return Result.DRAW
+
+        return Result.WIN if player is winner else Result.LOSS
 
     @property
     def score(self) -> list[int]:
