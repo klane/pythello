@@ -15,16 +15,10 @@ class AssignedPlayer(NamedTuple):
     color: Color
 
     def __repr__(self) -> str:
-        return f'{self.name} ({self.color.name.lower()})'
+        return f'{self.player} ({self.color.name.lower()})'
 
     @property
     def name(self) -> str:
-        if isinstance(self.player, str):
-            return self.player
-
-        if hasattr(self.player, 'name'):
-            return str(self.player.name)
-
         return str(self.player)
 
     @property
