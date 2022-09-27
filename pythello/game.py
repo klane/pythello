@@ -27,6 +27,10 @@ class AssignedPlayer(NamedTuple):
 
         return f'{self.player}'
 
+    @property
+    def opponent(self) -> Color:
+        return self.color.opponent
+
 
 class Result(Enum):
     WIN = 1
@@ -47,9 +51,9 @@ class Game:
             AssignedPlayer(player1, Color.BLACK),
             AssignedPlayer(player2, Color.WHITE),
         )
-        self._current_player = Color.BLACK
+        self._current_player = self._players[Color.BLACK]
         self._verbose = verbose
-        self._valid = self._board.valid_moves(self._current_player)
+        self._valid = self._board.valid_moves(self._current_player.color)
         self._score = [0]
 
     @property
@@ -57,10 +61,10 @@ class Game:
         return self._board
 
     def captured(self, move: Position) -> PositionSet:
-        return self._board.captured(self._current_player, move)
+        return self._board.captured(self._current_player.color, move)
 
     @property
-    def current_player(self) -> Color:
+    def current_player(self) -> AssignedPlayer:
         return self._current_player
 
     @property
@@ -73,41 +77,41 @@ class Game:
             return True
 
         if not self.has_move:
-            next_player = self._current_player.opponent
-            return len(self._board.valid_moves(next_player)) == 0
+            next_player = self._players[self._current_player.opponent]
+            return len(self._board.valid_moves(next_player.color)) == 0
 
         return False
 
     def move(self, move: Position | None = None) -> Game:
         if move is None:
-            if callable(self.player):
-                move = self.player(self)
+            if callable(self._current_player.player):
+                move = self._current_player.player(self)
             else:
                 raise ValueError('Must provide move if current player is not an AI')
 
         if move not in self._valid:
             raise ValueError(f'Invalid move: {move}')
 
-        self._board.place_piece(move, self._current_player)
+        self._board.place_piece(move, self._current_player.color)
         self._score.append(self._board.score())
         self.next_turn()
 
         if not self.has_move and not self.is_over:
             if self._verbose:
-                print(f'Passing {self.player}')
+                print(f'Passing {self._current_player}')
 
             self.next_turn()
 
         return self
 
     def next_turn(self) -> Game:
-        self._current_player = self._current_player.opponent
-        self._valid = self._board.valid_moves(self._current_player)
+        self._current_player = self._players[self._current_player.opponent]
+        self._valid = self._board.valid_moves(self._current_player.color)
         return self
 
     @property
-    def player(self) -> Player:
-        return self._players[self._current_player].player
+    def player(self) -> AssignedPlayer:
+        return self._current_player
 
     @property
     def players(self) -> tuple[AssignedPlayer, AssignedPlayer]:
@@ -131,10 +135,10 @@ class Game:
             print(f'{self.winner} {max(score)}-{min(score)} in {n_turns} turns')
 
     def reset(self) -> Game:
-        self._current_player = Color.BLACK
+        self._current_player = self._players[Color.BLACK]
         self._board.reset()
         self._score = [0]
-        self._valid = self._board.valid_moves(self._current_player)
+        self._valid = self._board.valid_moves(self._current_player.color)
         return self
 
     def result(self, player: Color) -> Result | None:
