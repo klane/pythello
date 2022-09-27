@@ -15,7 +15,17 @@ class AssignedPlayer(NamedTuple):
     color: Color
 
     def __repr__(self) -> str:
-        return f'{self.player} ({self.color.name.lower()})'
+        return f'{self.name} ({self.color.name.lower()})'
+
+    @property
+    def name(self) -> str:
+        if isinstance(self.player, str):
+            return self.player
+
+        if hasattr(self.player, 'name'):
+            return getattr(self.player, 'name')
+
+        return f'{self.player}'
 
 
 class Result(Enum):
@@ -100,8 +110,8 @@ class Game:
         return self._players[self._current_player].player
 
     @property
-    def players(self) -> tuple[Player, Player]:
-        return (player.player for player in self._players)
+    def players(self) -> tuple[AssignedPlayer, AssignedPlayer]:
+        return self._players
 
     def print_results(self) -> None:
         score = [self._board.player_score(player.color) for player in self._players]

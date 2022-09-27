@@ -90,7 +90,7 @@ class App:
         player1_select = pg.Rect(0, 0, elem_width, self.menu_height)
         pgui.elements.UIDropDownMenu(
             player_options,
-            self.game.players[0],
+            self.game.players[0].name,
             player1_select,
             self.manager,
             object_id='player1',
@@ -100,7 +100,7 @@ class App:
         player2_select = pg.Rect(pos, 0, elem_width, self.menu_height)
         pgui.elements.UIDropDownMenu(
             player_options,
-            self.game.players[1],
+            self.game.players[1].name,
             player2_select,
             self.manager,
             object_id='player2',
