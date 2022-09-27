@@ -255,7 +255,7 @@ class App:
             self.change_game(**{event.ui_object_id: player})
 
     def make_move(self, move: Position | None = None) -> None:
-        self.game.move_with_pass(move)
+        self.game.move(move)
 
         if self.game.is_over:
             self.game.print_results()

@@ -70,10 +70,6 @@ class Game:
         self._board.place_piece(move, self._current_player)
         self._score.append(self._board.score())
         self.next_turn()
-        return self
-
-    def move_with_pass(self, move: Position | None = None) -> Game:
-        self.move(move)
 
         if not self.has_move and not self.is_over:
             if self._verbose:
