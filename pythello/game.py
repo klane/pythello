@@ -23,9 +23,9 @@ class AssignedPlayer(NamedTuple):
             return self.player
 
         if hasattr(self.player, 'name'):
-            return getattr(self.player, 'name')
+            return str(self.player.name)
 
-        return f'{self.player}'
+        return str(self.player)
 
     @property
     def opponent(self) -> Color:
