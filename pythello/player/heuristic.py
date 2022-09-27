@@ -16,7 +16,7 @@ class Heuristic:
 
     def __call__(self, game: Game) -> Position:
         scores = defaultdict(list)
-        player = game.current_player
+        player = game.current_player.color
 
         for move in game.valid:
             board = game.board.peek(move, player)
