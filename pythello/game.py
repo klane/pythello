@@ -150,7 +150,7 @@ class Game:
         if winner is None:
             return Result.DRAW
 
-        return Result.WIN if player is winner else Result.LOSS
+        return Result.WIN if player is winner.color else Result.LOSS
 
     @property
     def score(self) -> list[int]:
