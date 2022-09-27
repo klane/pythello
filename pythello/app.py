@@ -106,10 +106,6 @@ class App:
             object_id='player2',
         )
 
-    @property
-    def ai_turn(self) -> bool:
-        return callable(self.game.player) and not self.game.is_over
-
     def change_game(
         self,
         player1: Player | None = None,
@@ -217,7 +213,7 @@ class App:
         elif key == pg.K_TAB:
             self.paused = True
 
-            if self.ai_turn:
+            if self.game.ai_turn and not self.game.is_over:
                 self.make_move()
         elif key == pg.K_BACKSPACE:
             self.reset()
@@ -320,7 +316,7 @@ class App:
     def update(self, time: int) -> None:
         self.manager.update(time)
 
-        if self.ai_turn and not self.paused:
+        if self.game.ai_turn and not self.game.is_over and not self.paused:
             if self.time_since_turn > self.ai_delay:
                 self.make_move()
             else:
