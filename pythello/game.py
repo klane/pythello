@@ -57,10 +57,6 @@ class Game:
         self._score = [0]
 
     @property
-    def ai_turn(self) -> bool:
-        return callable(self._current_player.player)
-
-    @property
     def board(self) -> Board:
         return self._board
 
@@ -88,7 +84,7 @@ class Game:
 
     def move(self, move: Position | None = None) -> Game:
         if move is None:
-            if self.ai_turn:
+            if callable(self._current_player.player):
                 move = self._current_player.player(self)
             else:
                 raise ValueError('Must provide move if current player is not an AI')
