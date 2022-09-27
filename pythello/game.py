@@ -1,13 +1,21 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 
 from pythello.board import Color
 
 if TYPE_CHECKING:
     from pythello.board import Board, Position, PositionSet
     from pythello.player import Player
+
+
+class AssignedPlayer(NamedTuple):
+    player: Player
+    color: Color
+
+    def __repr__(self) -> str:
+        return f'{self.player} ({self.color.name.lower()})'
 
 
 class Result(Enum):
@@ -25,7 +33,10 @@ class Game:
         verbose: bool = False,
     ) -> None:
         self._board = board
-        self._players = (player1, player2)
+        self._players = (
+            AssignedPlayer(player1, Color.BLACK),
+            AssignedPlayer(player2, Color.WHITE),
+        )
         self._current_player = Color.BLACK
         self._verbose = verbose
         self._valid = self._board.valid_moves(self._current_player)
@@ -86,21 +97,21 @@ class Game:
 
     @property
     def player(self) -> Player:
-        return self._players[self._current_player]
+        return self._players[self._current_player].player
 
     @property
     def players(self) -> tuple[Player, Player]:
-        return self._players
+        return (player.player for player in self._players)
 
     def print_results(self) -> None:
-        score = [self._board.player_score(color) for color in Color]
+        score = [self._board.player_score(player.color) for player in self._players]
         n_turns = len(self._score) - 1
 
         if self._verbose:
             print('Game over!')
 
-            for player, player_color, player_score in zip(self._players, Color, score):
-                print(f'{player} ({player_color.name.lower()}) score: {player_score}')
+            for player, player_score in zip(self._players, score):
+                print(f'{player} score: {player_score}')
 
         if self.winner is None:
             print('Draw')
@@ -136,7 +147,7 @@ class Game:
         return self._valid
 
     @property
-    def winner(self) -> Player | None:
+    def winner(self) -> AssignedPlayer | None:
         score = self._score[-1]
 
         if not self.is_over or score == 0:
