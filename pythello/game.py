@@ -108,6 +108,10 @@ class Game:
         return self._players
 
     def print_results(self) -> None:
+        if not self.is_over:
+            print('The game is not finished')
+            return
+
         score = [self._board.player_score(player.color) for player in self._players]
         n_turns = len(self._score) - 1
 
