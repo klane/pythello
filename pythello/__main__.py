@@ -13,7 +13,7 @@ from pythello.game import Game
 from pythello.player import AI
 
 if TYPE_CHECKING:
-    from pythello.player import Player
+    from pythello.game import AssignedPlayer
 
 app = True
 app_size = 600
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     else:
         board = Board(game_size)
         game = Game(board, player1, player2, verbose)
-        results: dict[Player | None, int] = defaultdict(int)
+        results: dict[AssignedPlayer | None, int] = defaultdict(int)
         start_time = time.time()
 
         for _ in range(games):
