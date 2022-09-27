@@ -114,10 +114,6 @@ class Game:
         return self
 
     @property
-    def player(self) -> AssignedPlayer:
-        return self._current_player
-
-    @property
     def players(self) -> tuple[AssignedPlayer, AssignedPlayer]:
         return self._players
 
