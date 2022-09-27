@@ -119,13 +119,13 @@ class App:
         change = False
 
         if player1 is None:
-            player1 = self.game.players[0]
-        elif player1 != self.game.players[0]:
+            player1 = self.game.players[0].player
+        elif player1 != self.game.players[0].player:
             change = True
 
         if player2 is None:
-            player2 = self.game.players[1]
-        elif player2 != self.game.players[1]:
+            player2 = self.game.players[1].player
+        elif player2 != self.game.players[1].player:
             change = True
 
         if size is None:
