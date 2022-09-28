@@ -28,7 +28,7 @@ TEXT_COLOR = pg.Color('black')
 
 class App:
     def __init__(self, size: int) -> None:
-        self.game = Game('Player 1', 'Player 2', Board())
+        self.game = Game(Board())
         self.size = size
         self.menu_height = 25
         self.graph_height = 100
@@ -90,7 +90,7 @@ class App:
         player1_select = pg.Rect(0, 0, elem_width, self.menu_height)
         pgui.elements.UIDropDownMenu(
             player_options,
-            self.game.players[0],
+            self.game.players[0].player,
             player1_select,
             self.manager,
             object_id='player1',
@@ -100,7 +100,7 @@ class App:
         player2_select = pg.Rect(pos, 0, elem_width, self.menu_height)
         pgui.elements.UIDropDownMenu(
             player_options,
-            self.game.players[1],
+            self.game.players[1].player,
             player2_select,
             self.manager,
             object_id='player2',
@@ -108,7 +108,7 @@ class App:
 
     @property
     def ai_turn(self) -> bool:
-        return callable(self.game.player) and not self.game.is_over
+        return callable(self.game.current_player.player) and not self.game.is_over
 
     def change_game(
         self,
@@ -119,13 +119,13 @@ class App:
         change = False
 
         if player1 is None:
-            player1 = self.game.players[0]
-        elif player1 != self.game.players[0]:
+            player1 = self.game.players[0].player
+        elif player1 != self.game.players[0].player:
             change = True
 
         if player2 is None:
-            player2 = self.game.players[1]
-        elif player2 != self.game.players[1]:
+            player2 = self.game.players[1].player
+        elif player2 != self.game.players[1].player:
             change = True
 
         if size is None:
@@ -135,7 +135,7 @@ class App:
             change = True
 
         if change:
-            self.game = Game(player1, player2, board)
+            self.game = Game(board, player1, player2)
             self.size_label.set_text(f'Size: {board.size}')
             self.paused = True
             self.reset()
@@ -255,7 +255,7 @@ class App:
             self.change_game(**{event.ui_object_id: player})
 
     def make_move(self, move: Position | None = None) -> None:
-        self.game.move_with_pass(move)
+        self.game.move(move)
 
         if self.game.is_over:
             self.game.print_results()

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from collections import Counter
+from enum import Enum
+from typing import TYPE_CHECKING, NamedTuple
 
 from pythello.board import Color
 
@@ -9,15 +11,36 @@ if TYPE_CHECKING:
     from pythello.player import Player
 
 
+class AssignedPlayer(NamedTuple):
+    player: Player
+    color: Color
+
+    def __repr__(self) -> str:
+        return f'{self.player} ({self.color.name.lower()})'
+
+
+class Result(Enum):
+    WIN = 1
+    LOSS = 2
+    DRAW = 3
+
+
 class Game:
     def __init__(
-        self, player1: Player, player2: Player, board: Board, verbose: bool = False
+        self,
+        board: Board,
+        player1: Player = 'Player 1',
+        player2: Player = 'Player 2',
+        verbose: bool = False,
     ) -> None:
-        self._players = (player1, player2)
-        self._current_player = Color.BLACK
         self._board = board
+        self._players = (
+            AssignedPlayer(player1, Color.BLACK),
+            AssignedPlayer(player2, Color.WHITE),
+        )
+        self._current_player = self._players[Color.BLACK]
         self._verbose = verbose
-        self._valid = self._board.valid_moves(self._current_player)
+        self._valid = self._board.valid_moves(self._current_player.color)
         self._score = [0]
 
     @property
@@ -25,10 +48,10 @@ class Game:
         return self._board
 
     def captured(self, move: Position) -> PositionSet:
-        return self._board.captured(self._current_player, move)
+        return self._board.captured(self._current_player.color, move)
 
     @property
-    def current_player(self) -> Color:
+    def current_player(self) -> AssignedPlayer:
         return self._current_player
 
     @property
@@ -41,59 +64,55 @@ class Game:
             return True
 
         if not self.has_move:
-            next_player = self._current_player.opponent
-            return len(self._board.valid_moves(next_player)) == 0
+            next_player = self._players[self._current_player.color.opponent]
+            return len(self._board.valid_moves(next_player.color)) == 0
 
         return False
 
     def move(self, move: Position | None = None) -> Game:
         if move is None:
-            if callable(self.player):
-                move = self.player(self)
+            if callable(self._current_player.player):
+                move = self._current_player.player(self)
             else:
                 raise ValueError('Must provide move if current player is not an AI')
 
         if move not in self._valid:
             raise ValueError(f'Invalid move: {move}')
 
-        self._board.place_piece(move, self._current_player)
+        self._board.place_piece(move, self._current_player.color)
         self._score.append(self._board.score())
         self.next_turn()
-        return self
-
-    def move_with_pass(self, move: Position | None = None) -> Game:
-        self.move(move)
 
         if not self.has_move and not self.is_over:
             if self._verbose:
-                print(f'Passing {self.player}')
+                print(f'Passing {self._current_player}')
 
             self.next_turn()
 
         return self
 
     def next_turn(self) -> Game:
-        self._current_player = self._current_player.opponent
-        self._valid = self._board.valid_moves(self._current_player)
+        self._current_player = self._players[self._current_player.color.opponent]
+        self._valid = self._board.valid_moves(self._current_player.color)
         return self
 
     @property
-    def player(self) -> Player:
-        return self._players[self._current_player]
-
-    @property
-    def players(self) -> tuple[Player, Player]:
+    def players(self) -> tuple[AssignedPlayer, AssignedPlayer]:
         return self._players
 
     def print_results(self) -> None:
-        score = [self._board.player_score(color) for color in Color]
+        if not self.is_over:
+            print('The game is not finished')
+            return
+
+        score = [self._board.player_score(player.color) for player in self._players]
         n_turns = len(self._score) - 1
 
         if self._verbose:
             print('Game over!')
 
-            for player, player_color, player_score in zip(self._players, Color, score):
-                print(f'{player} ({player_color.name.lower()}) score: {player_score}')
+            for player, player_score in zip(self._players, score):
+                print(f'{player} score: {player_score}')
 
         if self.winner is None:
             print('Draw')
@@ -103,22 +122,54 @@ class Game:
             print(f'{self.winner} {max(score)}-{min(score)} in {n_turns} turns')
 
     def reset(self) -> Game:
-        self._current_player = Color.BLACK
+        self._current_player = self._players[Color.BLACK]
         self._board.reset()
         self._score = [0]
-        self._valid = self._board.valid_moves(self._current_player)
+        self._valid = self._board.valid_moves(self._current_player.color)
         return self
+
+    def result(self, player: Color) -> Result | None:
+        if not self.is_over:
+            return None
+
+        winner = self.winner
+
+        if winner is None:
+            return Result.DRAW
+
+        return Result.WIN if player is winner.color else Result.LOSS
 
     @property
     def score(self) -> list[int]:
         return self._score
+
+    @staticmethod
+    def series(
+        board: Board,
+        player1: Player,
+        player2: Player,
+        num_games: int,
+        verbose: bool = False,
+    ) -> dict[AssignedPlayer | None, int]:
+        game = Game(board, player1, player2, verbose)
+        results = Counter[AssignedPlayer | None]()
+
+        for _ in range(num_games):
+            while not game.is_over:
+                game.move()
+
+            game.print_results()
+            results[game.winner] += 1
+            game.reset()
+
+        return results
 
     @property
     def valid(self) -> PositionSet:
         return self._valid
 
     @property
-    def winner(self) -> Player | None:
+    def winner(self) -> AssignedPlayer | None:
         score = self._score[-1]
 
         if not self.is_over or score == 0:
