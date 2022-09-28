@@ -27,11 +27,13 @@ class ActionMaskModel(TorchModelV2, nn.Module):
         **kwargs: dict[str, Any],
     ) -> None:
         orig_space = getattr(obs_space, 'original_space', obs_space)
-        assert (
-            isinstance(orig_space, Dict)
-            and 'action_mask' in orig_space.spaces
-            and 'observations' in orig_space.spaces
-        )
+
+        if not isinstance(orig_space, Dict):
+            raise ValueError('Observation space is not an instance of Dict')
+
+        for key in ('action_mask', 'observations'):
+            if key not in orig_space.spaces:
+                raise ValueError(f'Observation space does not have a key "{key}"')
 
         TorchModelV2.__init__(
             self, obs_space, action_space, num_outputs, model_config, name, **kwargs
