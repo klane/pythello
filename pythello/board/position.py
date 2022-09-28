@@ -4,7 +4,7 @@ Position = int
 PositionSet = set[Position]
 
 
-def position_index(position: Position):
+def position_index(position: Position) -> int:
     return f'{position:b}'[::-1].find('1')
 
 
