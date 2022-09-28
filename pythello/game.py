@@ -18,10 +18,6 @@ class AssignedPlayer(NamedTuple):
     def __repr__(self) -> str:
         return f'{self.player} ({self.color.name.lower()})'
 
-    @property
-    def name(self) -> str:
-        return str(self.player)
-
 
 class Result(Enum):
     WIN = 1
