@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 import torch.nn as nn
@@ -24,7 +24,7 @@ class ActionMaskModel(TorchModelV2, nn.Module):
         num_outputs: int,
         model_config: ModelConfigDict,
         name: str,
-        **kwargs,
+        **kwargs: dict[str, Any],
     ) -> None:
         orig_space = getattr(obs_space, 'original_space', obs_space)
         assert (

@@ -35,7 +35,7 @@ class SelfPlayCallback(DefaultCallbacks):
         base_env: BaseEnv,
         policies: dict[PolicyID, Policy],
         episode: Episode | EpisodeV2 | Exception,
-        **kwargs,
+        **kwargs: dict[str, Any],
     ) -> None:
         main = Color.BLACK if episode.policy_for(Color.BLACK) == 'main' else Color.WHITE
         info = episode.last_info_for(main)
@@ -49,7 +49,11 @@ class SelfPlayCallback(DefaultCallbacks):
         episode.custom_metrics['draw2'] = main == opponent
 
     def on_train_result(
-        self, *, algorithm: Algorithm | None, result: dict[str, Any], **kwargs
+        self,
+        *,
+        algorithm: Algorithm | None,
+        result: dict[str, Any],
+        **kwargs: dict[str, Any],
     ) -> None:
         win_rate = result['custom_metrics']['win_mean']
         draw_rate = result['custom_metrics']['draw_mean']
@@ -69,7 +73,10 @@ class SelfPlayCallback(DefaultCallbacks):
             # to play against any of the previously played policies
             # (excluding 'random').
             def policy_mapping_fn(
-                agent_id: AgentID, episode: Episode, worker: RolloutWorker, **kwargs
+                agent_id: AgentID,
+                episode: Episode,
+                worker: RolloutWorker,
+                **kwargs: dict[str, Any],
             ) -> PolicyID:
                 # agent_id = [0|1] -> policy depends on episode ID
                 # This way, we make sure that both policies sometimes play

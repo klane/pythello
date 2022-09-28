@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 # from gym.spaces import Box
 import numpy as np
@@ -35,7 +35,7 @@ class RandomPolicy(Policy):
         state_batches: list[TensorType] | None = None,
         prev_action_batch: list[TensorStructType] | TensorStructType = None,
         prev_reward_batch: list[TensorStructType] | TensorStructType = None,
-        **kwargs,
+        **kwargs: dict[str, Any],
     ) -> tuple[TensorType, list[TensorType], dict[str, TensorType]]:
         # Working call to _unpack_obs
         unpacked_obs = _unpack_obs(
