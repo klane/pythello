@@ -37,6 +37,9 @@ class SelfPlayCallback(DefaultCallbacks):
         episode: Episode | EpisodeV2 | Exception,
         **kwargs: dict[str, Any],
     ) -> None:
+        if isinstance(episode, Exception):
+            raise ValueError('An error occurred during the episode')
+
         main = Color.BLACK if episode.policy_for(Color.BLACK) == 'main' else Color.WHITE
         info = episode.last_info_for(main)
         episode.custom_metrics['win'] = info['result'] is Result.WIN
