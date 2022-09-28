@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-# from gym.spaces import Box
-import numpy as np
 import random
-import tree
 from typing import TYPE_CHECKING
 
+# from gym.spaces import Box
+import numpy as np
+import tree
 from ray.rllib.models.modelv2 import _unpack_obs
 from ray.rllib.policy.policy import Policy
 from ray.rllib.policy.sample_batch import SampleBatch
@@ -67,7 +67,7 @@ class RandomPolicy(Policy):
         prev_reward_batch=None,
     ):
         raise ValueError('log')
-        action_mask = obs_batch[0, :self.action_space.n]
+        action_mask = obs_batch[0, : self.action_space.n]
         return np.array([random.random()] * self.action_space.n) * action_mask
 
     @override(Policy)
