@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import sys
 import time
-from collections import defaultdict
-from typing import TYPE_CHECKING
 
 import pygame as pg
 
@@ -11,9 +9,6 @@ from pythello.app import App
 from pythello.board import Board
 from pythello.game import Game
 from pythello.player import AI
-
-if TYPE_CHECKING:
-    from pythello.game import AssignedPlayer
 
 app = True
 app_size = 600
@@ -31,18 +26,9 @@ if __name__ == '__main__':
         pg.quit()
         sys.exit()
     else:
-        board = Board(game_size)
-        game = Game(board, player1, player2, verbose)
-        results: dict[AssignedPlayer | None, int] = defaultdict(int)
         start_time = time.time()
-
-        for _ in range(games):
-            while not game.is_over:
-                game.move()
-
-            game.print_results()
-            results[game.winner] += 1
-            game.reset()
+        board = Board(game_size)
+        results = Game.series(board, player1, player2, games, verbose)
 
         print({k: v for k, v in sorted(results.items(), key=lambda item: -item[1])})
         print(time.time() - start_time)

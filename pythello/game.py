@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 from enum import Enum
 from typing import TYPE_CHECKING, NamedTuple
 
@@ -149,6 +150,27 @@ class Game:
     @property
     def score(self) -> list[int]:
         return self._score
+
+    @staticmethod
+    def series(
+        board: Board,
+        player1: Player,
+        player2: Player,
+        num_games: int,
+        verbose: bool = False,
+    ) -> dict[AssignedPlayer | None, int]:
+        game = Game(board, player1, player2, verbose)
+        results = Counter[AssignedPlayer | None]()
+
+        for _ in range(num_games):
+            while not game.is_over:
+                game.move()
+
+            game.print_results()
+            results[game.winner] += 1
+            game.reset()
+
+        return results
 
     @property
     def valid(self) -> PositionSet:
