@@ -61,7 +61,8 @@ class Environment(MultiAgentEnv):
             player, move = actions.copy().popitem()
 
             if player is not self.game.current_player.color:
-                raise ValueError(f'It is not {Color(player).name}\'s turn')
+                name = Color(player).name
+                raise ValueError(f'{name.title()} is not the current player')
 
             # make move and pass if next player has no valid moves
             move = 1 << int(move)
