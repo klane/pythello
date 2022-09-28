@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING, Any
 
 # from gym.spaces import Box
 import numpy as np
-import tree
+
+# import tree
 from ray.rllib.models.modelv2 import _unpack_obs
 from ray.rllib.policy.policy import Policy
 from ray.rllib.policy.sample_batch import SampleBatch
@@ -51,24 +52,24 @@ class RandomPolicy(Policy):
         ]
         return actions, [], {}
 
-    @override(Policy)
-    def learn_on_batch(self, samples):
-        """No learning."""
-        raise ValueError('learn')
-        return {}
+    # @override(Policy)
+    # def learn_on_batch(self, samples):
+    #     """No learning."""
+    #     raise ValueError('learn')
+    #     return {}
 
-    @override(Policy)
-    def compute_log_likelihoods(
-        self,
-        actions,
-        obs_batch,
-        state_batches=None,
-        prev_action_batch=None,
-        prev_reward_batch=None,
-    ):
-        raise ValueError('log')
-        action_mask = obs_batch[0, : self.action_space.n]
-        return np.array([random.random()] * self.action_space.n) * action_mask
+    # @override(Policy)
+    # def compute_log_likelihoods(
+    #     self,
+    #     actions,
+    #     obs_batch,
+    #     state_batches=None,
+    #     prev_action_batch=None,
+    #     prev_reward_batch=None,
+    # ):
+    #     raise ValueError('log')
+    #     action_mask = obs_batch[0, : self.action_space.n]
+    #     return np.array([random.random()] * self.action_space.n) * action_mask
 
     @override(Policy)
     def get_weights(self) -> ModelWeights:
@@ -81,13 +82,13 @@ class RandomPolicy(Policy):
         """No weights to set."""
         # raise ValueError('set weights')
 
-    @override(Policy)
-    def _get_dummy_batch_from_view_requirements(self, batch_size: int = 1):
-        raise ValueError('dummy')
-        return SampleBatch(
-            {
-                SampleBatch.OBS: tree.map_structure(
-                    lambda s: s[None], self.observation_space.sample()
-                ),
-            }
-        )
+    # @override(Policy)
+    # def _get_dummy_batch_from_view_requirements(self, batch_size: int = 1):
+    #     raise ValueError('dummy')
+    #     return SampleBatch(
+    #         {
+    #             SampleBatch.OBS: tree.map_structure(
+    #                 lambda s: s[None], self.observation_space.sample()
+    #             ),
+    #         }
+    #     )
