@@ -22,10 +22,6 @@ class AssignedPlayer(NamedTuple):
     def name(self) -> str:
         return str(self.player)
 
-    @property
-    def opponent(self) -> Color:
-        return self.color.opponent
-
 
 class Result(Enum):
     WIN = 1
@@ -72,7 +68,7 @@ class Game:
             return True
 
         if not self.has_move:
-            next_player = self._players[self._current_player.opponent]
+            next_player = self._players[self._current_player.color.opponent]
             return len(self._board.valid_moves(next_player.color)) == 0
 
         return False
@@ -100,7 +96,7 @@ class Game:
         return self
 
     def next_turn(self) -> Game:
-        self._current_player = self._players[self._current_player.opponent]
+        self._current_player = self._players[self._current_player.color.opponent]
         self._valid = self._board.valid_moves(self._current_player.color)
         return self
 
