@@ -3,11 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import torch
-import torch.nn as nn
 from gym.spaces import Dict
 from ray.rllib.models.torch.fcnet import FullyConnectedNetwork as TorchFC
 from ray.rllib.models.torch.torch_modelv2 import TorchModelV2
 from ray.rllib.utils.torch_utils import FLOAT_MIN
+from torch import nn
 
 if TYPE_CHECKING:
     from gym import Space
