@@ -79,8 +79,7 @@ class Environment(MultiAgentEnv):
         game_over = self.game.is_over
 
         # all agents are done when the game is over
-        for x in list(Color) + ['__all__']:
-            done[x] = game_over
+        done = {Color.BLACK: game_over, Color.WHITE: game_over, '__all__': game_over}
 
         if game_over:
             # add observation to enable info for both players
