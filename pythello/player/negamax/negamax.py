@@ -37,7 +37,7 @@ class Negamax:
             self.cache = {}
 
     def __call__(self, game: Game) -> Position:
-        board, player = game.board, game.current_player
+        board, player = game.board, game.current_player.color
         negamax(board, player, self.scorer, self.cache, self.depth)
         return self.cache[(board, player)].move
 
