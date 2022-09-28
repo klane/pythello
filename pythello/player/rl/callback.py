@@ -55,6 +55,9 @@ class SelfPlayCallback(DefaultCallbacks):
         result: dict[str, Any],
         **kwargs: dict[str, Any],
     ) -> None:
+        if algorithm is None:
+            raise ValueError('No algorithm provided')
+
         win_rate = result['custom_metrics']['win_mean']
         draw_rate = result['custom_metrics']['draw_mean']
         result['win_rate'] = win_rate
