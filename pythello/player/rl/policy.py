@@ -80,7 +80,6 @@ class RandomPolicy(Policy):
     def set_weights(self, weights: ModelWeights) -> None:
         """No weights to set."""
         # raise ValueError('set weights')
-        pass
 
     @override(Policy)
     def _get_dummy_batch_from_view_requirements(self, batch_size: int = 1):
