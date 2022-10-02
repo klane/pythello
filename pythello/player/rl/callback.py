@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import deque
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
@@ -7,6 +8,8 @@ from ray.rllib.algorithms.callbacks import DefaultCallbacks
 
 from pythello.board import Color
 from pythello.game import Result
+
+from .environment import DRAW_REWARD, WIN_REWARD
 
 if TYPE_CHECKING:
     from ray.rllib.algorithms import Algorithm
@@ -18,7 +21,7 @@ if TYPE_CHECKING:
 
 
 class SelfPlayCallback(DefaultCallbacks):
-    def __init__(self, win_rate_threshold: float) -> None:
+    def __init__(self, win_rate_threshold: float, episode_window: int = 1000) -> None:
         if not 0 <= win_rate_threshold <= 1:
             raise ValueError('Win rate threshold must be between 0 and 1')
 
@@ -27,6 +30,7 @@ class SelfPlayCallback(DefaultCallbacks):
         # 2=2nd main policy snapshot, etc..
         self.current_opponent = 0
         self.win_rate_threshold = win_rate_threshold
+        self.win_history = deque(maxlen=episode_window)
 
     def on_episode_end(
         self,
@@ -61,16 +65,37 @@ class SelfPlayCallback(DefaultCallbacks):
         if algorithm is None:
             raise ValueError('No algorithm provided')
 
-        win_rate = result['custom_metrics']['win_mean']
-        draw_rate = result['custom_metrics']['draw_mean']
-        result['win_rate'] = win_rate
-        result['draw_rate'] = draw_rate
+        main_rewards = result['hist_stats']['policy_main_reward']
+
+        episode_wins = [reward == WIN_REWARD for reward in main_rewards]
+        result['episode_win_rate'] = sum(episode_wins) / len(episode_wins)
+
+        episode_draws = [reward == DRAW_REWARD for reward in main_rewards]
+        result['episode_draw_rate'] = sum(episode_draws) / len(episode_draws)
+
+        self.win_history.extend(episode_wins)
+        result['win_rate'] = sum(self.win_history) / len(self.win_history)
+        full_window = len(self.win_history) == self.win_history.maxlen
+
+        if result['episode_win_rate'] != result['custom_metrics']['win_mean']:
+            raise ValueError('discrepancy')
+
+        if result['episode_win_rate'] != result['custom_metrics']['win2_mean']:
+            raise ValueError('discrepancy')
+
+        if result['episode_draw_rate'] != result['custom_metrics']['draw_mean']:
+            raise ValueError('discrepancy')
+
+        if result['episode_draw_rate'] != result['custom_metrics']['draw2_mean']:
+            raise ValueError('discrepancy')
+
         # print(f'Iter={algorithm.iteration} win-rate={win_rate} -> ', end='')
 
         # If win rate is good -> Snapshot current policy and play against
         # it next, keeping the snapshot fixed and only improving the 'main'
         # policy.
-        if win_rate + draw_rate > self.win_rate_threshold:
+        if result['win_rate'] > self.win_rate_threshold and full_window:
+            self.win_history.clear()
             self.current_opponent += 1
             new_pol_id = f'main_v{self.current_opponent}'
             # print(f'adding new opponent to the mix ({new_pol_id}).')
