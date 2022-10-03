@@ -44,13 +44,13 @@ class SelfPlayCallback(DefaultCallbacks):
         if isinstance(episode, Exception):
             raise ValueError('An error occurred during the episode')
 
-        main = Color.BLACK if episode.policy_for(Color.BLACK) == 'main' else Color.WHITE
+        main = Color.BLACK if episode.policy_for(Color.BLACK) == 'main_0' else Color.WHITE
         info = episode.last_info_for(main)
         episode.custom_metrics['win'] = info['result'] is Result.WIN
         episode.custom_metrics['draw'] = info['result'] is Result.DRAW
 
         rewards = episode.agent_rewards.copy()
-        main = rewards.pop(next(key for key in rewards.keys() if key[1] == 'main'))
+        main = rewards.pop(next(key for key in rewards.keys() if key[1] == 'main_0'))
         opponent = rewards.popitem()[1]
         episode.custom_metrics['win2'] = main > opponent
         episode.custom_metrics['draw2'] = main == opponent
@@ -67,7 +67,7 @@ class SelfPlayCallback(DefaultCallbacks):
 
         self.win_rate_calculator(result)
 
-        main_rewards = result['hist_stats']['policy_main_reward']
+        main_rewards = result['hist_stats']['policy_main_0_reward']
 
         episode_wins = [reward == WIN_REWARD for reward in main_rewards]
         result['episode_win_rate'] = sum(episode_wins) / len(episode_wins)
@@ -76,7 +76,7 @@ class SelfPlayCallback(DefaultCallbacks):
         result['episode_draw_rate'] = sum(episode_draws) / len(episode_draws)
 
         # self.win_history.extend(episode_wins)
-        main_win_history = self.win_rate_calculator.history['main']
+        main_win_history = self.win_rate_calculator.history('main_0')
         result['win_rate'] = sum(main_win_history) / len(main_win_history)
         full_window = len(main_win_history) == main_win_history.maxlen
 
@@ -86,7 +86,7 @@ class SelfPlayCallback(DefaultCallbacks):
         if result['episode_win_rate'] != result['custom_metrics']['win2_mean']:
             raise ValueError('discrepancy')
 
-        if result['episode_win_rate'] != result['game_results']['main']['episode_win_rate']:
+        if result['episode_win_rate'] != result['game_results']['main_0']['episode_win_rate']:
             raise ValueError('discrepancy')
 
         if result['episode_draw_rate'] != result['custom_metrics']['draw_mean']:
@@ -95,10 +95,10 @@ class SelfPlayCallback(DefaultCallbacks):
         if result['episode_draw_rate'] != result['custom_metrics']['draw2_mean']:
             raise ValueError('discrepancy')
 
-        if result['episode_draw_rate'] != result['game_results']['main']['episode_draw_rate']:
+        if result['episode_draw_rate'] != result['game_results']['main_0']['episode_draw_rate']:
             raise ValueError('discrepancy')
 
-        if result['win_rate'] != result['game_results']['main']['win_rate']:
+        if result['win_rate'] != result['game_results']['main_0']['win_rate']:
             raise ValueError('discrepancy')
 
         # print(f'Iter={algorithm.iteration} win-rate={win_rate} -> ', end='')
@@ -109,7 +109,7 @@ class SelfPlayCallback(DefaultCallbacks):
         if result['win_rate'] > self.win_rate_threshold and full_window:
             self.win_rate_calculator.clear()
             self.current_opponent += 1
-            new_pol_id = f'main_v{self.current_opponent}'
+            new_pol_id = f'main_{self.current_opponent}'
             # print(f'adding new opponent to the mix ({new_pol_id}).')
 
             # Re-define the mapping function, such that 'main' is forced
@@ -126,21 +126,21 @@ class SelfPlayCallback(DefaultCallbacks):
                 # (start player) and sometimes agent1 (player to move 2nd).
                 policy_id = np.random.choice(list(range(1, self.current_opponent + 1)))
                 return (
-                    'main'
+                    'main_0'
                     if episode.episode_id % 2 == agent_id
-                    else f'main_v{policy_id}'
+                    else f'main_{policy_id}'
                 )
 
             new_policy = algorithm.add_policy(
                 policy_id=new_pol_id,
-                policy_cls=type(algorithm.get_policy('main')),
+                policy_cls=type(algorithm.get_policy('main_0')),
                 policy_mapping_fn=policy_mapping_fn,
             )
 
             # Set the weights of the new policy to the main policy.
             # We'll keep training the main policy, whereas `new_pol_id` will
             # remain fixed.
-            main_state = algorithm.get_policy('main').get_state()
+            main_state = algorithm.get_policy('main_0').get_state()
             new_policy.set_state(main_state)
             # We need to sync the just copied local weights (from main policy)
             # to all the remote workers as well.
