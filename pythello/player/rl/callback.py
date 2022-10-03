@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from collections import deque
+import re
+from collections import defaultdict, deque
+from functools import partial
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
@@ -18,6 +20,48 @@ if TYPE_CHECKING:
     from ray.rllib.evaluation.episode_v2 import EpisodeV2
     from ray.rllib.policy import Policy
     from ray.rllib.utils.typing import AgentID, PolicyID
+
+
+class WinRateCallback(DefaultCallbacks):
+    def __init__(self, episode_window: int = 1000) -> None:
+        super().__init__()
+        self.win_history = defaultdict(partial(deque, maxlen=episode_window))
+
+    def on_train_result(
+        self,
+        *,
+        algorithm: Algorithm | None,
+        result: dict[str, Any],
+        **kwargs: dict[str, Any],
+    ) -> None:
+        if algorithm is None:
+            raise ValueError('No algorithm provided')
+
+        # If no evaluation results -> Use hist data gathered for training.
+        if 'evaluation' in result:
+            hist_stats = result['evaluation']['hist_stats']
+        else:
+            hist_stats = result['hist_stats']
+
+        result['game_results'] = {}
+
+        for policy_id, rewards in hist_stats.items():
+            mo = re.match('^policy_(.+)_reward$', policy_id)
+
+            if mo is None:
+                continue
+
+            policy_id = mo.group(1)
+            episode_wins = [reward == WIN_REWARD for reward in rewards]
+            episode_draws = [reward == DRAW_REWARD for reward in rewards]
+            policy_win_history = self.win_history[policy_id]
+            policy_win_history.extend(episode_wins)
+
+            result['game_results'][policy_id] = {
+                'win_rate': sum(policy_win_history) / len(policy_win_history),
+                'episode_win_rate': sum(episode_wins) / len(episode_wins),
+                'episode_draw_rate': sum(episode_draws) / len(episode_draws),
+            }
 
 
 class SelfPlayCallback(DefaultCallbacks):
