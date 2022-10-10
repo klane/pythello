@@ -49,20 +49,25 @@ class SelfPlayCallback(DefaultCallbacks):
         result['game_results'] = {}
 
         for key, rewards in hist_stats.items():
+            # get policy ID
             match = re.match('^policy_(.+)_reward$', key)
 
             if match is None:
                 continue
 
             policy_id = match.group(1)
+
+            # update policy win rate
             episode_wins = [reward == WIN_REWARD for reward in rewards]
             policy_win_history = self.win_history[policy_id]
             policy_win_history.extend(episode_wins)
 
+            # update policy draw rate
             episode_draws = [reward == DRAW_REWARD for reward in rewards]
             policy_draw_history = self.draw_history[policy_id]
             policy_draw_history.extend(episode_draws)
 
+            # populate policy game results
             result['game_results'][policy_id] = {
                 'win_rate': sum(policy_win_history) / len(policy_win_history),
                 'draw_rate': sum(policy_draw_history) / len(policy_draw_history),
