@@ -1,22 +1,18 @@
 from __future__ import annotations
 
+import re
+from collections import defaultdict, deque
+from functools import partial
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from ray.rllib.algorithms.callbacks import DefaultCallbacks
 
-from pythello.board import Color
-from pythello.game import Result
-
 from .environment import DRAW_REWARD, WIN_REWARD
-from .win_rate import WinRateCalculator
 
 if TYPE_CHECKING:
     from ray.rllib.algorithms import Algorithm
-    from ray.rllib.env import BaseEnv
     from ray.rllib.evaluation import Episode, RolloutWorker
-    from ray.rllib.evaluation.episode_v2 import EpisodeV2
-    from ray.rllib.policy import Policy
     from ray.rllib.utils.typing import AgentID, PolicyID
 
 
@@ -30,30 +26,8 @@ class SelfPlayCallback(DefaultCallbacks):
         # 2=2nd main policy snapshot, etc..
         self.current_opponent = 0
         self.win_rate_threshold = win_rate_threshold
-        self.win_rate_calculator = WinRateCalculator(episode_window)
-
-    def on_episode_end(
-        self,
-        *,
-        worker: RolloutWorker,
-        base_env: BaseEnv,
-        policies: dict[PolicyID, Policy],
-        episode: Episode | EpisodeV2 | Exception,
-        **kwargs: dict[str, Any],
-    ) -> None:
-        if isinstance(episode, Exception):
-            raise ValueError('An error occurred during the episode')
-
-        main = Color.BLACK if episode.policy_for(Color.BLACK) == 'main_0' else Color.WHITE
-        info = episode.last_info_for(main)
-        episode.custom_metrics['win'] = info['result'] is Result.WIN
-        episode.custom_metrics['draw'] = info['result'] is Result.DRAW
-
-        rewards = episode.agent_rewards.copy()
-        main = rewards.pop(next(key for key in rewards.keys() if key[1] == 'main_0'))
-        opponent = rewards.popitem()[1]
-        episode.custom_metrics['win2'] = main > opponent
-        episode.custom_metrics['draw2'] = main == opponent
+        self.win_history = defaultdict(partial(deque, maxlen=episode_window))
+        self.draw_history = defaultdict(partial(deque, maxlen=episode_window))
 
     def on_train_result(
         self,
@@ -65,49 +39,50 @@ class SelfPlayCallback(DefaultCallbacks):
         if algorithm is None:
             raise ValueError('No algorithm provided')
 
-        self.win_rate_calculator(result)
+        # If no evaluation results -> Use hist data gathered for training.
+        if 'evaluation' in result:
+            hist_stats = result['evaluation']['hist_stats']
+        else:
+            hist_stats = result['hist_stats']
 
-        main_rewards = result['hist_stats']['policy_main_0_reward']
+        # calculate game performance for each policy
+        result['game_results'] = {}
 
-        episode_wins = [reward == WIN_REWARD for reward in main_rewards]
-        result['episode_win_rate'] = sum(episode_wins) / len(episode_wins)
+        for key, rewards in hist_stats.items():
+            match = re.match('^policy_(.+)_reward$', key)
 
-        episode_draws = [reward == DRAW_REWARD for reward in main_rewards]
-        result['episode_draw_rate'] = sum(episode_draws) / len(episode_draws)
+            if match is None:
+                continue
 
-        # self.win_history.extend(episode_wins)
-        main_win_history = self.win_rate_calculator.history('main_0')
-        result['win_rate'] = sum(main_win_history) / len(main_win_history)
+            policy_id = match.group(1)
+            episode_wins = [reward == WIN_REWARD for reward in rewards]
+            policy_win_history = self.win_history[policy_id]
+            policy_win_history.extend(episode_wins)
+
+            episode_draws = [reward == DRAW_REWARD for reward in rewards]
+            policy_draw_history = self.draw_history[policy_id]
+            policy_draw_history.extend(episode_draws)
+
+            result['game_results'][policy_id] = {
+                'win_rate': sum(policy_win_history) / len(policy_win_history),
+                'draw_rate': sum(policy_draw_history) / len(policy_draw_history),
+                'episode_win_rate': sum(episode_wins) / len(episode_wins),
+                'episode_draw_rate': sum(episode_draws) / len(episode_draws),
+            }
+
+        main_policy_id = 'main_0'
+        main_win_rate = result['game_results'][main_policy_id]['win_rate']
+        main_win_history = self.win_history[main_policy_id]
         full_window = len(main_win_history) == main_win_history.maxlen
-
-        if result['episode_win_rate'] != result['custom_metrics']['win_mean']:
-            raise ValueError('discrepancy')
-
-        if result['episode_win_rate'] != result['custom_metrics']['win2_mean']:
-            raise ValueError('discrepancy')
-
-        if result['episode_win_rate'] != result['game_results']['main_0']['episode_win_rate']:
-            raise ValueError('discrepancy')
-
-        if result['episode_draw_rate'] != result['custom_metrics']['draw_mean']:
-            raise ValueError('discrepancy')
-
-        if result['episode_draw_rate'] != result['custom_metrics']['draw2_mean']:
-            raise ValueError('discrepancy')
-
-        if result['episode_draw_rate'] != result['game_results']['main_0']['episode_draw_rate']:
-            raise ValueError('discrepancy')
-
-        if result['win_rate'] != result['game_results']['main_0']['win_rate']:
-            raise ValueError('discrepancy')
 
         # print(f'Iter={algorithm.iteration} win-rate={win_rate} -> ', end='')
 
         # If win rate is good -> Snapshot current policy and play against
         # it next, keeping the snapshot fixed and only improving the 'main'
         # policy.
-        if result['win_rate'] > self.win_rate_threshold and full_window:
-            self.win_rate_calculator.clear()
+        if main_win_rate > self.win_rate_threshold and full_window:
+            self.win_history.clear()
+            self.draw_history.clear()
             self.current_opponent += 1
             new_pol_id = f'main_{self.current_opponent}'
             # print(f'adding new opponent to the mix ({new_pol_id}).')
@@ -126,21 +101,21 @@ class SelfPlayCallback(DefaultCallbacks):
                 # (start player) and sometimes agent1 (player to move 2nd).
                 policy_id = np.random.choice(list(range(1, self.current_opponent + 1)))
                 return (
-                    'main_0'
+                    main_policy_id
                     if episode.episode_id % 2 == agent_id
                     else f'main_{policy_id}'
                 )
 
             new_policy = algorithm.add_policy(
                 policy_id=new_pol_id,
-                policy_cls=type(algorithm.get_policy('main_0')),
+                policy_cls=type(algorithm.get_policy(main_policy_id)),
                 policy_mapping_fn=policy_mapping_fn,
             )
 
             # Set the weights of the new policy to the main policy.
             # We'll keep training the main policy, whereas `new_pol_id` will
             # remain fixed.
-            main_state = algorithm.get_policy('main_0').get_state()
+            main_state = algorithm.get_policy(main_policy_id).get_state()
             new_policy.set_state(main_state)
             # We need to sync the just copied local weights (from main policy)
             # to all the remote workers as well.
