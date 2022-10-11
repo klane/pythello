@@ -27,7 +27,6 @@ class SelfPlayCallback(DefaultCallbacks):
         self.current_opponent = 0
         self.win_rate_threshold = win_rate_threshold
         self.win_history = defaultdict(partial(deque, maxlen=episode_window))
-        self.draw_history = defaultdict(partial(deque, maxlen=episode_window))
 
     def on_train_result(
         self,
@@ -59,18 +58,13 @@ class SelfPlayCallback(DefaultCallbacks):
 
             # update policy win rate
             episode_wins = [reward == WIN_REWARD for reward in rewards]
+            episode_draws = [reward == DRAW_REWARD for reward in rewards]
             policy_win_history = self.win_history[policy_id]
             policy_win_history.extend(episode_wins)
-
-            # update policy draw rate
-            episode_draws = [reward == DRAW_REWARD for reward in rewards]
-            policy_draw_history = self.draw_history[policy_id]
-            policy_draw_history.extend(episode_draws)
 
             # populate policy game results
             result['game_results'][policy_id] = {
                 'win_rate': sum(policy_win_history) / len(policy_win_history),
-                'draw_rate': sum(policy_draw_history) / len(policy_draw_history),
                 'episode_win_rate': sum(episode_wins) / len(episode_wins),
                 'episode_draw_rate': sum(episode_draws) / len(episode_draws),
             }
@@ -87,7 +81,6 @@ class SelfPlayCallback(DefaultCallbacks):
         # policy.
         if main_win_rate > self.win_rate_threshold and full_window:
             self.win_history.clear()
-            self.draw_history.clear()
             self.current_opponent += 1
             new_pol_id = f'main_{self.current_opponent}'
             # print(f'adding new opponent to the mix ({new_pol_id}).')
