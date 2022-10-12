@@ -31,7 +31,7 @@ class ActionMaskModel(TorchModelV2, nn.Module):
         if not isinstance(orig_space, Dict):
             raise ValueError('Observation space is not an instance of Dict')
 
-        for key in ('action_mask', 'observations'):
+        for key in ('action_mask', 'observation'):
             if key not in orig_space.spaces:
                 raise ValueError(f'Observation space does not have a key "{key}"')
 
@@ -41,7 +41,7 @@ class ActionMaskModel(TorchModelV2, nn.Module):
         nn.Module.__init__(self)
 
         self.internal_model = TorchFC(
-            orig_space['observations'],
+            orig_space['observation'],
             action_space,
             num_outputs,
             model_config,
@@ -55,7 +55,7 @@ class ActionMaskModel(TorchModelV2, nn.Module):
         seq_lens: TensorType,
     ) -> tuple[TensorType, list[TensorType]]:
         # Compute the unmasked logits.
-        logits, _ = self.internal_model({'obs': input_dict['obs']['observations']})
+        logits, _ = self.internal_model({'obs': input_dict['obs']['observation']})
 
         # Extract the available actions tensor from the observation.
         action_mask = input_dict['obs']['action_mask']

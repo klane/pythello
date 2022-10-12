@@ -38,31 +38,31 @@ class Environment(MultiAgentEnv):
         self.observation_space = Dict(
             {
                 'action_mask': Box(0, 1, shape=(num_spaces,), dtype=np.int8),
-                # 'observations': Box(-1, 1, shape=(num_spaces,), dtype=np.int8),
-                'observations': MultiBinary((num_players, num_spaces)),
+                # 'observation': Box(-1, 1, shape=(num_spaces,), dtype=np.int8),
+                'observation': MultiBinary((num_players, num_spaces)),
             }
         )
 
     def player_observation(self, game: Game, player: Color) -> dict[str, np.ndarray]:
         observation = self.observation_space.sample()
         observation['action_mask'].fill(0)
-        observation['observations'].fill(0)
+        observation['observation'].fill(0)
 
         for i in game.board.valid_moves(player):
             observation['action_mask'][position_index(i)] = 1
 
         # # for m in split_position(self._game.board.players[player]):
         # for m in split_position(self._game.board.players[Color.BLACK]):
-        #     observation['observations'][position_index(m)] = 1
+        #     observation['observation'][position_index(m)] = 1
 
         # # for m in split_position(self._game.board.players[player.opponent]):
         # for m in split_position(self._game.board.players[Color.WHITE]):
-        #     observation['observations'][position_index(m)] = -1
+        #     observation['observation'][position_index(m)] = -1
 
         for i, position in enumerate(game.board.players):
             for m in split_position(position):
-                # observation['observations'][position_index(m)] = 1 if i == player else -1
-                observation['observations'][i, position_index(m)] = 1
+                # observation['observation'][position_index(m)] = 1 if i == player else -1
+                observation['observation'][i, position_index(m)] = 1
 
         return observation
 
@@ -90,7 +90,7 @@ class Environment(MultiAgentEnv):
 
         obs, rew, done, info = {}, {}, {}, {}
 
-        # compute observations for current player
+        # compute observation for current player
         # current player is the one that has the next move, not the one that just moved
         player = self._game.current_player.color
         obs[player] = self.player_observation(self._game, player)
