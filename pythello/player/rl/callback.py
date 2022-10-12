@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 from ray.rllib.algorithms.callbacks import DefaultCallbacks
 
-from .environment import DRAW_REWARD, WIN_REWARD
+from .environment import DRAW_REWARD, LOSS_REWARD, WIN_REWARD
 
 if TYPE_CHECKING:
     from ray.rllib.algorithms import Algorithm
@@ -44,8 +44,10 @@ class SelfPlayCallback(DefaultCallbacks):
         else:
             hist_stats = result['hist_stats']
 
-        # calculate game performance for each policy
-        result['game_results'] = {}
+        # calculate game stats for each policy
+        main_policy_id = 'main_0'
+        result['game_stats_by_opponent'] = {}
+        win_rate_exceeds_threshold = []
 
         for key, rewards in hist_stats.items():
             # get policy ID
@@ -57,29 +59,39 @@ class SelfPlayCallback(DefaultCallbacks):
             policy_id = match.group(1)
 
             # update policy win rate
-            episode_wins = [reward == WIN_REWARD for reward in rewards]
+            if policy_id == main_policy_id:
+                episode_wins = [reward == WIN_REWARD for reward in rewards]
+            else:
+                episode_wins = [reward == LOSS_REWARD for reward in rewards]
+
             episode_draws = [reward == DRAW_REWARD for reward in rewards]
             policy_win_history = self.win_history[policy_id]
             policy_win_history.extend(episode_wins)
 
-            # populate policy game results
-            result['game_results'][policy_id] = {
+            # populate policy game stats
+            policy_game_stats = {
                 'win_rate': sum(policy_win_history) / len(policy_win_history),
                 'episode_win_rate': sum(episode_wins) / len(episode_wins),
                 'episode_draw_rate': sum(episode_draws) / len(episode_draws),
             }
 
-        main_policy_id = 'main_0'
-        main_win_rate = result['game_results'][main_policy_id]['win_rate']
+            if policy_id == main_policy_id:
+                result['game_stats'] = policy_game_stats
+            else:
+                result['game_stats_by_opponent'][policy_id] = policy_game_stats
+                win_rate_exceeds_threshold.append(
+                    policy_game_stats['win_rate'] > self.win_rate_threshold
+                )
+
         main_win_history = self.win_history[main_policy_id]
-        full_window = len(main_win_history) == main_win_history.maxlen
+        sufficient_games_played = len(main_win_history) == main_win_history.maxlen
 
         # print(f'Iter={algorithm.iteration} win-rate={win_rate} -> ', end='')
 
         # If win rate is good -> Snapshot current policy and play against
         # it next, keeping the snapshot fixed and only improving the 'main'
         # policy.
-        if main_win_rate > self.win_rate_threshold and full_window:
+        if all(win_rate_exceeds_threshold) and sufficient_games_played:
             self.win_history.clear()
             self.current_opponent += 1
             new_pol_id = f'main_{self.current_opponent}'
