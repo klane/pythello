@@ -46,10 +46,32 @@ class Environment(MultiAgentEnv):
             }
         )
 
+    def player_observation(self, game: Game, player: Color) -> dict[str, np.ndarray]:
+        action_mask = np.zeros_like(self._action_mask.sample())
+        observations = np.zeros_like(self._observation_space.sample())
+
+        for i in game.board.valid_moves(player):
+            action_mask[position_index(i)] = 1
+
+        # # for m in split_position(self._game.board.players[player]):
+        # for m in split_position(self._game.board.players[Color.BLACK]):
+        #     observations[position_index(m)] = 1
+
+        # # for m in split_position(self._game.board.players[player.opponent]):
+        # for m in split_position(self._game.board.players[Color.WHITE]):
+        #     observations[position_index(m)] = -1
+
+        for i, position in enumerate(game.board.players):
+            for m in split_position(position):
+                # observations[position_index(m)] = 1 if i == player else -1
+                observations[i, position_index(m)] = 1
+
+        return {'action_mask': action_mask, 'observations': observations}
+
     def reset(self) -> MultiAgentDict:
         self._game.reset()
         player = self._game.current_player.color
-        return {player: self._current_observations(player)}
+        return {player: self.player_observation(self._game, player)}
 
     def step(
         self, actions: MultiAgentDict
@@ -73,7 +95,7 @@ class Environment(MultiAgentEnv):
         # compute observations for current player
         # current player is the one that has the next move, not the one that just moved
         player = self._game.current_player.color
-        obs[player] = self._current_observations(player)
+        obs[player] = self.player_observation(self._game, player)
 
         # check if game is over
         game_over = self._game.is_over
@@ -83,7 +105,7 @@ class Environment(MultiAgentEnv):
 
         if game_over:
             # add observation to enable info for both players
-            obs[player.opponent] = self._current_observations(player.opponent)
+            obs[player.opponent] = self.player_observation(self._game, player.opponent)
 
             # provide rewards and info
             for player in Color:
@@ -96,25 +118,3 @@ class Environment(MultiAgentEnv):
                 info[player] = {'result': result}
 
         return obs, rew, done, info
-
-    def _current_observations(self, player: Color) -> dict[str, np.ndarray]:
-        action_mask = np.zeros_like(self._action_mask.sample())
-        observations = np.zeros_like(self._observation_space.sample())
-
-        for i in self._game.board.valid_moves(player):
-            action_mask[position_index(i)] = 1
-
-        # # for m in split_position(self._game.board.players[player]):
-        # for m in split_position(self._game.board.players[Color.BLACK]):
-        #     observations[position_index(m)] = 1
-
-        # # for m in split_position(self._game.board.players[player.opponent]):
-        # for m in split_position(self._game.board.players[Color.WHITE]):
-        #     observations[position_index(m)] = -1
-
-        for i, position in enumerate(self._game.board.players):
-            for m in split_position(position):
-                # observations[position_index(m)] = 1 if i == player else -1
-                observations[i, position_index(m)] = 1
-
-        return {'action_mask': action_mask, 'observations': observations}
