@@ -35,38 +35,36 @@ class Environment(MultiAgentEnv):
 
         num_spaces = board_size**2
         self.action_space = Discrete(num_spaces)
-
-        self._action_mask = Box(0, 1, shape=(num_spaces,))
-        # self._observation_space = Box(-1, 1, shape=(num_spaces,), dtype=np.int8)
-        self._observation_space = MultiBinary((num_players, num_spaces))
         self.observation_space = Dict(
             {
-                'action_mask': self._action_mask,
-                'observations': self._observation_space,
+                'action_mask': Box(0, 1, shape=(num_spaces,), dtype=np.int8),
+                # 'observations': Box(-1, 1, shape=(num_spaces,), dtype=np.int8),
+                'observations': MultiBinary((num_players, num_spaces)),
             }
         )
 
     def player_observation(self, game: Game, player: Color) -> dict[str, np.ndarray]:
-        action_mask = np.zeros_like(self._action_mask.sample())
-        observations = np.zeros_like(self._observation_space.sample())
+        observation = self.observation_space.sample()
+        observation['action_mask'].fill(0)
+        observation['observations'].fill(0)
 
         for i in game.board.valid_moves(player):
-            action_mask[position_index(i)] = 1
+            observation['action_mask'][position_index(i)] = 1
 
         # # for m in split_position(self._game.board.players[player]):
         # for m in split_position(self._game.board.players[Color.BLACK]):
-        #     observations[position_index(m)] = 1
+        #     observation['observations'][position_index(m)] = 1
 
         # # for m in split_position(self._game.board.players[player.opponent]):
         # for m in split_position(self._game.board.players[Color.WHITE]):
-        #     observations[position_index(m)] = -1
+        #     observation['observations'][position_index(m)] = -1
 
         for i, position in enumerate(game.board.players):
             for m in split_position(position):
-                # observations[position_index(m)] = 1 if i == player else -1
-                observations[i, position_index(m)] = 1
+                # observation['observations'][position_index(m)] = 1 if i == player else -1
+                observation['observations'][i, position_index(m)] = 1
 
-        return {'action_mask': action_mask, 'observations': observations}
+        return observation
 
     def reset(self) -> MultiAgentDict:
         self._game.reset()
