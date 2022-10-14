@@ -108,10 +108,6 @@ class Environment(MultiAgentEnv):
             # provide rewards and info
             for player in Color:
                 result = self._game.result(player)
-
-                if result is None:
-                    raise ValueError('The game is not finished')
-
                 rew[player] = REWARDS[result]
                 info[player] = {'result': result}
 
