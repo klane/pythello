@@ -40,8 +40,8 @@ class RandomPolicy(Policy):
     ) -> tuple[TensorType, list[TensorType], dict[str, TensorType]]:
         # Working call to _unpack_obs
         unpacked_obs = _unpack_obs(
-            np.array(obs_batch, dtype=np.float32),
-            self.observation_space.original_space,
+            obs=obs_batch,
+            space=self.observation_space.original_space,
             tensorlib=np,
         )
 
