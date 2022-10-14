@@ -116,16 +116,17 @@ class SelfPlayCallback(DefaultCallbacks):
                     else f'main_{policy_id}'
                 )
 
+            main_policy = algorithm.get_policy(main_policy_id)
             new_policy = algorithm.add_policy(
                 policy_id=new_pol_id,
-                policy_cls=type(algorithm.get_policy(main_policy_id)),
+                policy_cls=type(main_policy),
                 policy_mapping_fn=policy_mapping_fn,
             )
 
             # Set the weights of the new policy to the main policy.
             # We'll keep training the main policy, whereas `new_pol_id` will
             # remain fixed.
-            main_state = algorithm.get_policy(main_policy_id).get_state()
+            main_state = main_policy.get_state()
             new_policy.set_state(main_state)
             # We need to sync the just copied local weights (from main policy)
             # to all the remote workers as well.
