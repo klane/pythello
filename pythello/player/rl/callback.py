@@ -1,19 +1,46 @@
 from __future__ import annotations
 
-import re
 from collections import defaultdict, deque
-from functools import partial
-from typing import TYPE_CHECKING, Any
+from fractions import Fraction
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 import numpy as np
 from ray.rllib.algorithms.callbacks import DefaultCallbacks
 
+from pythello.board import Color
+from pythello.game import Result
 from .environment import DRAW_REWARD, LOSS_REWARD, WIN_REWARD
 
 if TYPE_CHECKING:
     from ray.rllib.algorithms import Algorithm
     from ray.rllib.evaluation import Episode, RolloutWorker
     from ray.rllib.utils.typing import AgentID, PolicyID
+
+OPPONENT_REWARDS = {
+    WIN_REWARD: Result.LOSS,
+    LOSS_REWARD: Result.WIN,
+    DRAW_REWARD: Result.DRAW,
+}
+
+
+class Percent(Fraction):
+    def append(self, condition: bool) -> None:
+        self._denominator += 1
+
+        if condition:
+            self._numerator += 1
+
+    @staticmethod
+    def new() -> Percent:
+        pct = Percent()
+        pct._denominator -= 1
+        return pct
+
+
+class Summary(NamedTuple):
+    player: Color
+    opponent: str
+    result: Result
 
 
 class SelfPlayCallback(DefaultCallbacks):
@@ -26,7 +53,15 @@ class SelfPlayCallback(DefaultCallbacks):
         # 2=2nd main policy snapshot, etc..
         self.current_opponent = 0
         self.win_rate_threshold = win_rate_threshold
-        self.win_history = defaultdict(partial(deque, maxlen=episode_window))
+
+        # windowed game results
+        self.window = deque[Summary](maxlen=episode_window)
+
+        # overall metrics
+        self.overall_win_rate = Percent.new()
+        self.overall_color_balance = Percent.new()
+        self.overall_color_results = defaultdict[Color, Percent](Percent.new)
+        self.overall_player_results = defaultdict[str, Percent](Percent.new)
 
     def on_train_result(
         self,
@@ -38,61 +73,90 @@ class SelfPlayCallback(DefaultCallbacks):
         if algorithm is None:
             raise ValueError('No algorithm provided')
 
-        # If no evaluation results -> Use hist data gathered for training.
-        if 'evaluation' in result:
-            hist_stats = result['evaluation']['hist_stats']
-        else:
-            hist_stats = result['hist_stats']
-
-        # calculate game stats for each policy
+        # calculate game stats
         main_policy_id = 'main_0'
-        result['game_stats_by_opponent'] = {}
-        win_rate_exceeds_threshold = []
+        episode_win_rate = Percent.new()
+        episode_color_balance = Percent.new()
+        window_win_rate = Percent.new()
+        window_color_balance = Percent.new()
+        window_color_results = defaultdict[Color, Percent](Percent.new)
+        window_player_results = defaultdict[str, Percent](Percent.new)
 
-        for key, rewards in hist_stats.items():
-            # get policy ID
-            match = re.match('^policy_(.+)_reward$', key)
+        for episode in algorithm._episode_history:
+            summary = next(
+                Summary(player.opponent, policy_id, OPPONENT_REWARDS[reward])
+                for (player, policy_id), reward in episode.agent_rewards.items()
+                if policy_id != main_policy_id
+            )
+            win = summary.result is Result.WIN
+            played_black = summary.player is Color.BLACK
 
-            if match is None:
-                continue
+            # update episode metrics
+            episode_win_rate.append(win)
+            episode_color_balance.append(played_black)
 
-            policy_id = match.group(1)
+            # update windowed metrics
+            self.window.append(summary)
 
-            # update policy win rate
-            if policy_id == main_policy_id:
-                episode_wins = [reward == WIN_REWARD for reward in rewards]
-            else:
-                episode_wins = [reward == LOSS_REWARD for reward in rewards]
+            # update overall metrics
+            self.overall_win_rate.append(win)
+            self.overall_color_balance.append(played_black)
+            self.overall_color_results[summary.player].append(win)
+            self.overall_player_results[summary.opponent].append(win)
 
-            episode_draws = [reward == DRAW_REWARD for reward in rewards]
-            policy_win_history = self.win_history[policy_id]
-            policy_win_history.extend(episode_wins)
+        # update windowed metrics
+        for summary in self.window:
+            win = summary.result is Result.WIN
+            played_black = summary.player is Color.BLACK
+            window_win_rate.append(win)
+            window_color_balance.append(played_black)
+            window_color_results[summary.player].append(win)
+            window_player_results[summary.opponent].append(win)
 
-            # populate policy game stats
-            policy_game_stats = {
-                'win_rate': sum(policy_win_history) / len(policy_win_history),
-                'episode_win_rate': sum(episode_wins) / len(episode_wins),
-                'episode_draw_rate': sum(episode_draws) / len(episode_draws),
-            }
+        result['game_stats'] = {
+            'batch': {
+                'win_rate': float(episode_win_rate),
+                'color_balance': float(episode_color_balance),
+            },
+            'window': {
+                'win_rate': float(window_win_rate),
+                'win_rate_by_color': {
+                    color.name.lower(): float(win_rate)
+                    for color, win_rate in window_color_results.items()
+                },
+                'win_rate_by_opponent': {
+                    opponent: float(win_rate)
+                    for opponent, win_rate in window_player_results.items()
+                },
+                'color_balance': float(window_color_balance),
+            },
+            'overall': {
+                'win_rate': float(self.overall_win_rate),
+                'win_rate_by_color': {
+                    color.name.lower(): float(win_rate)
+                    for color, win_rate in self.overall_color_results.items()
+                },
+                'win_rate_by_opponent': {
+                    opponent: float(win_rate)
+                    for opponent, win_rate in self.overall_player_results.items()
+                },
+                'color_balance': float(self.overall_color_balance),
+            },
+        }
 
-            if policy_id == main_policy_id:
-                result['game_stats'] = policy_game_stats
-            else:
-                result['game_stats_by_opponent'][policy_id] = policy_game_stats
-                win_rate_exceeds_threshold.append(
-                    policy_game_stats['win_rate'] > self.win_rate_threshold
-                )
-
-        main_win_history = self.win_history[main_policy_id]
-        sufficient_games_played = len(main_win_history) == main_win_history.maxlen
+        win_rates_exceed_threshold = all(
+            float(win_rate) > self.win_rate_threshold
+            for win_rate in window_player_results.values()
+        )
+        sufficient_games_played = len(self.window) == self.window.maxlen
 
         # print(f'Iter={algorithm.iteration} win-rate={win_rate} -> ', end='')
 
         # If win rate is good -> Snapshot current policy and play against
         # it next, keeping the snapshot fixed and only improving the 'main'
         # policy.
-        if all(win_rate_exceeds_threshold) and sufficient_games_played:
-            self.win_history.clear()
+        if win_rates_exceed_threshold and sufficient_games_played:
+            self.window.clear()
             self.current_opponent += 1
             new_pol_id = f'main_{self.current_opponent}'
             # print(f'adding new opponent to the mix ({new_pol_id}).')
