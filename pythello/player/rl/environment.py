@@ -29,9 +29,7 @@ class Environment(MultiAgentEnv):
 
         board_size = config.get('board_size', DEFAULT_SIZE)
         self._game = Game(Board(board_size))
-
-        num_players = 2
-        self._agent_ids = set(range(num_players))
+        self._agent_ids = set(Color)
 
         num_spaces = board_size**2
         self.action_space = Discrete(num_spaces)
@@ -39,7 +37,7 @@ class Environment(MultiAgentEnv):
             {
                 'action_mask': Box(0, 1, shape=(num_spaces,), dtype=np.int8),
                 # 'observation': Box(-1, 1, shape=(num_spaces,), dtype=np.int8),
-                'observation': MultiBinary((num_players, num_spaces)),
+                'observation': MultiBinary((len(Color), num_spaces)),
             }
         )
 
