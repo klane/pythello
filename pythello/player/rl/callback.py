@@ -75,6 +75,7 @@ class SelfPlayCallback(DefaultCallbacks):
 
         # calculate game stats
         main_policy_id = 'main_0'
+        opponents = set()
         episode_win_rate = Percent.new()
         episode_color_balance = Percent.new()
         window_win_rate = Percent.new()
@@ -90,6 +91,7 @@ class SelfPlayCallback(DefaultCallbacks):
             )
             win = summary.result is Result.WIN
             played_black = summary.player is Color.BLACK
+            opponents.add(summary.opponent)
 
             # update episode metrics
             episode_win_rate.append(win)
@@ -112,6 +114,10 @@ class SelfPlayCallback(DefaultCallbacks):
             window_color_balance.append(played_black)
             window_color_results[summary.player].append(win)
             window_player_results[summary.opponent].append(win)
+
+        # remove opponents no longer playing
+        for opponent in self.overall_player_results.keys() - opponents:
+            self.overall_player_results.pop(opponent)
 
         result['game_stats'] = {
             'batch': {
