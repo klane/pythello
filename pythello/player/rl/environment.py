@@ -41,7 +41,7 @@ class Environment(MultiAgentEnv):
             }
         )
 
-    def player_observation(self, game: Game, player: Color) -> dict[str, np.ndarray]:
+    def compute_observation(self, game: Game, player: Color) -> dict[str, np.ndarray]:
         observation = self.observation_space.sample()
         observation['action_mask'].fill(0)
         observation['observation'].fill(0)
@@ -67,7 +67,7 @@ class Environment(MultiAgentEnv):
     def reset(self) -> MultiAgentDict:
         self._game.reset()
         player = self._game.current_player.color
-        return {player: self.player_observation(self._game, player)}
+        return {player: self.compute_observation(self._game, player)}
 
     def step(
         self, actions: MultiAgentDict
@@ -91,7 +91,7 @@ class Environment(MultiAgentEnv):
         # compute observation for current player
         # current player is the one that has the next move, not the one that just moved
         player = self._game.current_player.color
-        obs[player] = self.player_observation(self._game, player)
+        obs[player] = self.compute_observation(self._game, player)
 
         # check if game is over
         game_over = self._game.is_over
@@ -100,8 +100,9 @@ class Environment(MultiAgentEnv):
         done = {Color.BLACK: game_over, Color.WHITE: game_over, '__all__': game_over}
 
         if game_over:
-            # add observation to enable info for both players
-            obs[player.opponent] = self.player_observation(self._game, player.opponent)
+            # add opponent observation to enable info for both players
+            opponent = player.opponent
+            obs[opponent] = self.compute_observation(self._game, opponent)
 
             # provide rewards and info
             for player in Color:
