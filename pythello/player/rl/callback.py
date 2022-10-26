@@ -30,9 +30,9 @@ class Percent(Fraction):
         if condition:
             self._numerator += 1
 
-    @staticmethod
-    def new() -> Percent:
-        pct = Percent()
+    @classmethod
+    def new(cls) -> Percent:
+        pct = cls()
         pct._denominator -= 1
         return pct
 
