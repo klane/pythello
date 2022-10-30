@@ -41,12 +41,12 @@ class Environment(MultiAgentEnv):
             }
         )
 
-    def compute_observation(self, game: Game, player: Color) -> dict[str, np.ndarray]:
+    def compute_observation(self, board: Board, player: Color) -> dict[str, np.ndarray]:
         observation = self.observation_space.sample()
         observation['action_mask'].fill(0)
         observation['observation'].fill(0)
 
-        for i in game.board.valid_moves(player):
+        for i in board.valid_moves(player):
             observation['action_mask'][position_index(i)] = 1
 
         # # for m in split_position(self._game.board.players[player]):
@@ -57,7 +57,7 @@ class Environment(MultiAgentEnv):
         # for m in split_position(self._game.board.players[Color.WHITE]):
         #     observation['observation'][position_index(m)] = -1
 
-        for i, position in enumerate(game.board.players):
+        for i, position in enumerate(board.players):
             for m in split_position(position):
                 # observation['observation'][position_index(m)] = 1 if i == player else -1
                 observation['observation'][i, position_index(m)] = 1
@@ -67,7 +67,7 @@ class Environment(MultiAgentEnv):
     def reset(self) -> MultiAgentDict:
         self._game.reset()
         player = self._game.current_player.color
-        return {player: self.compute_observation(self._game, player)}
+        return {player: self.compute_observation(self._game.board, player)}
 
     def step(
         self, actions: MultiAgentDict
@@ -91,7 +91,7 @@ class Environment(MultiAgentEnv):
         # compute observation for current player
         # current player is the one that has the next move, not the one that just moved
         player = self._game.current_player.color
-        obs[player] = self.compute_observation(self._game, player)
+        obs[player] = self.compute_observation(self._game.board, player)
 
         # check if game is over
         game_over = self._game.is_over
@@ -102,7 +102,7 @@ class Environment(MultiAgentEnv):
         if game_over:
             # add opponent observation to enable info for both players
             opponent = player.opponent
-            obs[opponent] = self.compute_observation(self._game, opponent)
+            obs[opponent] = self.compute_observation(self._game.board, opponent)
 
             # provide rewards and info
             for player in Color:
