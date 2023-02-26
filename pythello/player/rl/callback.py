@@ -9,6 +9,7 @@ from ray.rllib.algorithms.callbacks import DefaultCallbacks
 
 from pythello.board import Color
 from pythello.game import Result
+
 from .environment import DRAW_REWARD, LOSS_REWARD, WIN_REWARD
 
 if TYPE_CHECKING:

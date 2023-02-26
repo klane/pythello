@@ -10,6 +10,7 @@ from pythello.player.rl.environment import DRAW_REWARD, WIN_REWARD
 
 class WinRateCalculator:
     def __init__(self, episode_window: int = 1000) -> None:
+        self._episode_window = episode_window
         self._history = defaultdict(partial(deque, maxlen=episode_window))
 
     def __call__(self, result: dict[str, Any]) -> None:
@@ -42,5 +43,18 @@ class WinRateCalculator:
     def clear(self) -> None:
         self._history.clear()
 
+    def copy(self) -> WinRateCalculator:
+        new = WinRateCalculator(self._episode_window)
+        # new._history = self._history.copy()
+        for policy, history in self._history.items():
+            new._history[policy].extend(self._history[policy].copy())
+        return new
+
     def history(self, policy_id: str) -> deque[bool]:
         return self._history[policy_id].copy()
+
+    def is_full(self, policy_id: str) -> bool:
+        return len(self._history[policy_id]) == self._episode_window
+
+    def win_rate(self, policy_id: str) -> float:
+        return sum(self._history[policy_id]) / len(self._history[policy_id])

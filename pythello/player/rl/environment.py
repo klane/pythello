@@ -6,16 +6,17 @@ import numpy as np
 from gym.spaces import Box, Dict, Discrete, MultiBinary
 from ray.rllib.env import MultiAgentEnv
 
-from pythello.board import Board, Color, position_index, split_position
+from pythello.board import Board, Color, position_index, position_to_coordinates, split_position
 from pythello.board.board import DEFAULT_SIZE
 from pythello.game import Game, Result
+from pythello.score.score import WIN_BONUS
 
 if TYPE_CHECKING:
     from ray.rllib.utils.typing import MultiAgentDict
 
-WIN_REWARD = 10
+WIN_REWARD = 1
 LOSS_REWARD = -WIN_REWARD
-DRAW_REWARD = 1
+DRAW_REWARD = 0
 REWARDS = {
     Result.WIN: WIN_REWARD,
     Result.LOSS: LOSS_REWARD,
@@ -35,9 +36,12 @@ class Environment(MultiAgentEnv):
         self.action_space = Discrete(num_spaces)
         self.observation_space = Dict(
             {
-                'action_mask': Box(0, 1, shape=(num_spaces,), dtype=np.int8),
-                # 'observation': Box(-1, 1, shape=(num_spaces,), dtype=np.int8),
-                'observation': MultiBinary((len(Color), num_spaces)),
+                # 'action_mask': Box(0, 1, shape=(num_spaces,), dtype=np.int8),
+                'action_mask': MultiBinary((num_spaces,)),
+                # 'observation': Box(-1, 1, shape=(board_size, board_size), dtype=np.int8),
+                'observation': Box(-1, 1, shape=(num_spaces,), dtype=np.int8),
+                # 'observation': MultiBinary((len(Color), num_spaces)),
+                # 'observation': MultiBinary((board_size, board_size, len(Color))),
             }
         )
 
@@ -59,8 +63,11 @@ class Environment(MultiAgentEnv):
 
         for i, position in enumerate(board.players):
             for m in split_position(position):
-                # observation['observation'][position_index(m)] = 1 if i == player else -1
-                observation['observation'][i, position_index(m)] = 1
+                # row, col = position_to_coordinates(m, game.board.size)
+                # observation['observation'][row, col] = 1 if i == player else -1
+                observation['observation'][position_index(m)] = 1 if i == player else -1
+                # observation['observation'][i, position_index(m)] = 1
+                # observation['observation'][row, col, i == player] = 1
 
         return observation
 
