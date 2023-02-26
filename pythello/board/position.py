@@ -4,8 +4,12 @@ Position = int
 PositionSet = set[Position]
 
 
+def position_index(position: Position) -> int:
+    return f'{position:b}'[::-1].find('1')
+
+
 def position_to_coordinates(position: Position, size: int) -> tuple[int, int]:
-    index = f'{position:b}'[::-1].find('1')
+    index = position_index(position)
     return index // size, index % size
 
 

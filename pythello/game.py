@@ -4,7 +4,7 @@ from collections import Counter
 from enum import Enum
 from typing import TYPE_CHECKING, NamedTuple
 
-from pythello.board import Color
+from pythello.board import Color, position_index
 
 if TYPE_CHECKING:
     from pythello.board import Board, Position, PositionSet
@@ -77,7 +77,7 @@ class Game:
                 raise ValueError('Must provide move if current player is not an AI')
 
         if move not in self._valid:
-            raise ValueError(f'Invalid move: {move}')
+            raise ValueError(f'Invalid move: {move} ({position_index(move)})')
 
         self._board.place_piece(move, self._current_player.color)
         self._score.append(self._board.score())
